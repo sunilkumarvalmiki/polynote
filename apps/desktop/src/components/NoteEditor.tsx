@@ -13,16 +13,16 @@ interface NoteEditorProps {
 interface Note {
   id: string;
   title: string;
-  body: string;
+  content: string;
   tags?: string[];
-  metadata?: Record<string, any>;
+  createdAt: string;
   updatedAt: string;
 }
 
 export function NoteEditor({ noteId }: NoteEditorProps) {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
+  const [content, setContent] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [isPreview, setIsPreview] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -31,34 +31,46 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
   // Fetch note data
   const { data: note, isLoading } = useQuery<Note>({
     queryKey: ['note', noteId],
-    queryFn: () => window.electronAPI?.getNote(noteId),
+    queryFn: async () => {
+      const api = window.electronAPI;
+      if (!api) throw new Error('Electron API not available');
+      return await api.getNote(noteId);
+    },
     enabled: !!noteId,
   });
 
   // Update mutation
-  const updateMutation = useMutation({
-    mutationFn: (updates: Partial<Note>) => window.electronAPI?.updateNote(noteId, updates),
+  const updateMutation = useMutation<Note, Error, Partial<Note>>({
+    mutationFn: async (updates) => {
+      const api = window.electronAPI;
+      if (!api) throw new Error('Electron API not available');
+      return await api.updateNote(noteId, updates);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
-      queryClient.invalidateQueries({ queryKey: ['note', noteId] });
+      void queryClient.invalidateQueries({ queryKey: ['notes'] });
+      void queryClient.invalidateQueries({ queryKey: ['note', noteId] });
       setHasChanges(false);
     },
   });
 
   // Delete mutation
-  const deleteMutation = useMutation({
-    mutationFn: () => window.electronAPI?.deleteNote(noteId),
+  const deleteMutation = useMutation<void, Error, void>({
+    mutationFn: async () => {
+      const api = window.electronAPI;
+      if (!api) throw new Error('Electron API not available');
+      return await api.deleteNote(noteId);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      void queryClient.invalidateQueries({ queryKey: ['notes'] });
     },
   });
 
   // Initialize form with note data
   useEffect(() => {
     if (note) {
-      setTitle(note.title || '');
-      setBody(note.body || '');
-      setTags(note.tags || []);
+      setTitle(note.title ?? '');
+      setContent(note.content ?? '');
+      setTags(note.tags ?? []);
       setHasChanges(false);
     }
   }, [note]);
@@ -68,15 +80,15 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
     if (note) {
       const changed =
         title !== note.title ||
-        body !== note.body ||
+        content !== note.content ||
         JSON.stringify(tags) !== JSON.stringify(note.tags);
       setHasChanges(changed);
     }
-  }, [title, body, tags, note]);
+  }, [title, content, tags, note]);
 
   const handleSave = async () => {
     try {
-      await updateMutation.mutateAsync({ title, body, tags });
+      await updateMutation.mutateAsync({ title, content, tags });
     } catch (error) {
       console.error('Failed to save note:', error);
     }
@@ -95,8 +107,10 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
   const handleAISummarize = async () => {
     setAiLoading(true);
     try {
-      const summary = await window.electronAPI?.summarizeNote(noteId);
-      setBody(prev => `${prev}\n\n## AI Summary\n\n${summary}`);
+      const api = window.electronAPI;
+      if (!api) return;
+      const summary = await api.summarizeNote(noteId);
+      if (summary) setContent(prev => `${prev}\n\n## AI Summary\n\n${summary}`);
     } catch (error) {
       console.error('Failed to summarize:', error);
     } finally {
@@ -107,8 +121,10 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
   const handleAITranslate = async (targetLang: string) => {
     setAiLoading(true);
     try {
-      const translation = await window.electronAPI?.translateNote(noteId, targetLang);
-      setBody(translation);
+      const api = window.electronAPI;
+      if (!api) return;
+      const translation = await api.translateNote(noteId, targetLang);
+      if (translation) setContent(translation);
     } catch (error) {
       console.error('Failed to translate:', error);
     } finally {
@@ -119,8 +135,10 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
   const handleAIRewrite = async (style: string) => {
     setAiLoading(true);
     try {
-      const rewritten = await window.electronAPI?.rewriteNote(noteId, style);
-      setBody(rewritten);
+      const api = window.electronAPI;
+      if (!api) return;
+      const rewritten = await api.rewriteNote(noteId, style);
+      if (rewritten) setContent(rewritten);
     } catch (error) {
       console.error('Failed to rewrite:', error);
     } finally {
@@ -150,7 +168,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
       <div className="border-b border-border p-4 flex items-center justify-between bg-card">
         <div className="flex items-center gap-2">
           <button
-            onClick={handleSave}
+            onClick={() => void handleSave()}
             disabled={!hasChanges || updateMutation.isPending}
             className={clsx(
               'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
@@ -215,7 +233,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
           </div>
 
           <button
-            onClick={handleDelete}
+            onClick={() => void handleDelete()}
             disabled={deleteMutation.isPending}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
           >
@@ -243,7 +261,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
               </div>
             )}
             <div className="prose prose-slate dark:prose-invert max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkFrontmatter]}>{body}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkFrontmatter]}>{content}</ReactMarkdown>
             </div>
           </div>
         ) : (
@@ -276,10 +294,10 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
               />
             </div>
 
-            {/* Body */}
+            {/* Content */}
             <textarea
-              value={body}
-              onChange={e => setBody(e.target.value)}
+              value={content}
+              onChange={e => setContent(e.target.value)}
               placeholder="Start writing..."
               className="w-full flex-1 min-h-[500px] p-4 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm resize-none"
               spellCheck={false}
