@@ -23,20 +23,24 @@ Visit our [releases page](https://github.com/sunilkumarvalmiki/polynote/releases
 ### Step 2: Install
 
 **Windows:**
+
 1. Double-click the downloaded `.exe` file
 2. Follow the installation wizard
 3. Launch PolyNote from the Start Menu
 
 **macOS:**
+
 1. Open the downloaded `.dmg` file
 2. Drag PolyNote to your Applications folder
 3. Launch PolyNote from Applications
 
 **Linux (AppImage):**
+
 1. Make the file executable: `chmod +x polynote-linux-x64.AppImage`
 2. Run it: `./polynote-linux-x64.AppImage`
 
 **Linux (DEB):**
+
 ```bash
 sudo dpkg -i polynote-linux-x64.deb
 ```
@@ -48,6 +52,7 @@ When you first open PolyNote, you'll see a welcome screen. Follow these steps:
 ### 1. Choose Your Language
 
 Select your preferred language:
+
 - English
 - తెలుగు (Telugu)
 - हिंदी (Hindi)
@@ -66,6 +71,7 @@ PolyNote works by connecting to your existing note-taking apps. We recommend sta
 4. PolyNote will automatically detect and import your notes
 
 **Where is my Obsidian vault?**
+
 - Windows: `C:\Users\YourName\Documents\Obsidian`
 - macOS: `/Users/YourName/Documents/Obsidian`
 - Linux: `~/Documents/Obsidian`
@@ -142,11 +148,13 @@ PolyNote includes powerful AI features that run on your computer:
 ### Search and Navigation
 
 **Quick Search:**
+
 - Press `Ctrl+F` (Windows/Linux) or `Cmd+F` (macOS)
 - Type your search query
 - Results appear instantly with highlighted matches
 
 **Advanced Search:**
+
 - Click the search icon in the sidebar
 - Use filters for tags, dates, apps
 - Search supports:
@@ -155,6 +163,7 @@ PolyNote includes powerful AI features that run on your computer:
   - Tags: `#important`
 
 **Graph View:**
+
 - Click "Graph" in the sidebar
 - See visual connections between notes
 - Click nodes to open notes
@@ -179,14 +188,17 @@ PolyNote includes powerful AI features that run on your computer:
 ### Can't Connect to App?
 
 **Obsidian:**
+
 - Verify the vault folder path is correct
 - Check folder has read/write permissions
 
 **Notion:**
+
 - Re-authorize: Settings → Connections → Notion → Reconnect
 - Check internet connection
 
 **Joplin:**
+
 - Ensure Joplin is running
 - Verify Web Clipper is enabled
 - Check authorization token is correct

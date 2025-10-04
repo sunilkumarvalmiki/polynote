@@ -44,9 +44,7 @@ describe('ShareBundleService', () => {
         password: 'correct-password',
       });
 
-      await expect(
-        share.extractBundle(bundle, 'wrong-password')
-      ).rejects.toThrow();
+      await expect(share.extractBundle(bundle, 'wrong-password')).rejects.toThrow();
     });
 
     it('should include attachments when requested', async () => {
@@ -67,9 +65,7 @@ describe('ShareBundleService', () => {
         expiresAt: Date.now() - 1000, // Expired 1 second ago
       });
 
-      await expect(
-        share.extractBundle(bundle, 'test-password')
-      ).rejects.toThrow('expired');
+      await expect(share.extractBundle(bundle, 'test-password')).rejects.toThrow('expired');
     });
 
     it('should allow extraction before expiration', async () => {
@@ -108,7 +104,7 @@ describe('ShareBundleService', () => {
       });
 
       // Corrupt the bundle
-      bundle[10] ^= 0xFF;
+      bundle[10] ^= 0xff;
 
       const isValid = await share.verifyBundle(bundle);
       expect(isValid).toBe(false);
@@ -129,9 +125,7 @@ describe('ShareBundleService', () => {
 
     it('should throw error for invalid bundle metadata', async () => {
       const invalidBundle = Buffer.from('invalid');
-      await expect(
-        share.getBundleMetadata(invalidBundle)
-      ).rejects.toThrow();
+      await expect(share.getBundleMetadata(invalidBundle)).rejects.toThrow();
     });
   });
 
@@ -165,9 +159,7 @@ describe('ShareBundleService', () => {
         password: 'correct-password',
       });
 
-      await expect(
-        share.extractBundleWithSodium(bundle, 'wrong-password')
-      ).rejects.toThrow();
+      await expect(share.extractBundleWithSodium(bundle, 'wrong-password')).rejects.toThrow();
     });
 
     it('should get metadata without password (libsodium)', async () => {
@@ -191,9 +183,9 @@ describe('ShareBundleService', () => {
         expiresAt: Date.now() - 1000, // Expired
       });
 
-      await expect(
-        share.extractBundleWithSodium(bundle, 'test-password')
-      ).rejects.toThrow('expired');
+      await expect(share.extractBundleWithSodium(bundle, 'test-password')).rejects.toThrow(
+        'expired'
+      );
     });
   });
 

@@ -17,7 +17,7 @@ describe('NoteMapper', () => {
     createdAt: new Date('2025-01-01'),
     updatedAt: new Date('2025-01-02'),
     tags: ['tag1', 'tag2'],
-    ...overrides
+    ...overrides,
   });
 
   const createInternalNote = (overrides: Partial<Note> = {}): Note => ({
@@ -29,19 +29,19 @@ describe('NoteMapper', () => {
     source_connector: 'obsidian',
     source_id: 'obsidian-note-1',
     checksum: 'abc123',
-    ...overrides
+    ...overrides,
   });
 
   describe('registerMapping', () => {
     it('should register custom mapping configuration', () => {
       const customMapper = new NoteMapper();
-      
+
       customMapper.registerMapping({
         connector: 'custom',
         fieldMappings: {
           id: 'uid',
-          title: 'name'
-        }
+          title: 'name',
+        },
       });
 
       expect(customMapper.hasConnector('custom')).toBe(true);
@@ -51,8 +51,8 @@ describe('NoteMapper', () => {
       mapper.registerMapping({
         connector: 'obsidian',
         fieldMappings: {
-          id: 'custom_id'
-        }
+          id: 'custom_id',
+        },
       });
 
       expect(mapper.hasConnector('obsidian')).toBe(true);
@@ -62,7 +62,7 @@ describe('NoteMapper', () => {
   describe('importNote', () => {
     it('should import external note to internal format', () => {
       const external = createExternalNote();
-      
+
       const result = mapper.importNote(external, 'obsidian', 'test.md');
 
       expect(result.id).toBe(external.id);
@@ -78,7 +78,7 @@ describe('NoteMapper', () => {
       const timestamp = Date.now();
       const external = createExternalNote({
         createdAt: timestamp,
-        updatedAt: timestamp + 1000
+        updatedAt: timestamp + 1000,
       });
 
       const result = mapper.importNote(external, 'obsidian', 'test.md');
@@ -89,7 +89,7 @@ describe('NoteMapper', () => {
 
     it('should normalize tags during import', () => {
       const external = createExternalNote({
-        tags: ['#tag1', 'TAG2', '  tag3  ']
+        tags: ['#tag1', 'TAG2', '  tag3  '],
       });
 
       const result = mapper.importNote(external, 'obsidian', 'test.md');
@@ -153,8 +153,8 @@ describe('NoteMapper', () => {
       const internal = createInternalNote({
         tags: [
           { id: 'tag-1', name: 'work', created_at: Date.now() },
-          { id: 'tag-2', name: 'important', created_at: Date.now() }
-        ]
+          { id: 'tag-2', name: 'important', created_at: Date.now() },
+        ],
       });
 
       const result = mapper.exportNote(internal, 'obsidian');
@@ -185,7 +185,7 @@ describe('NoteMapper', () => {
       const external: ExternalNote[] = [
         createExternalNote({ id: 'ext-1' }),
         createExternalNote({ id: 'ext-2' }),
-        createExternalNote({ id: 'ext-3' })
+        createExternalNote({ id: 'ext-3' }),
       ];
 
       const result = mapper.importNotes(external, 'obsidian');
@@ -208,7 +208,7 @@ describe('NoteMapper', () => {
       const internal: Note[] = [
         createInternalNote({ id: 'note-1' }),
         createInternalNote({ id: 'note-2' }),
-        createInternalNote({ id: 'note-3' })
+        createInternalNote({ id: 'note-3' }),
       ];
 
       const result = mapper.exportNotes(internal, 'obsidian');
@@ -232,13 +232,13 @@ describe('NoteMapper', () => {
         id: 'note-1',
         title: 'Title',
         body: 'Content',
-        updated_at: Date.now()
+        updated_at: Date.now(),
       });
       const remote = createInternalNote({
         id: 'note-1',
         title: 'Title',
         body: 'Content',
-        updated_at: Date.now() + 1000
+        updated_at: Date.now() + 1000,
       });
 
       const { merged, hasConflict, conflicts } = mapper.mergeNotes(local, remote);
@@ -271,16 +271,16 @@ describe('NoteMapper', () => {
     it('should use newer version when merging', () => {
       const older = Date.now();
       const newer = older + 10000;
-      
+
       const local = createInternalNote({
         title: 'Old Title',
         body: 'Old content',
-        updated_at: older
+        updated_at: older,
       });
       const remote = createInternalNote({
         title: 'New Title',
         body: 'New content',
-        updated_at: newer
+        updated_at: newer,
       });
 
       const { merged } = mapper.mergeNotes(local, remote);
@@ -304,14 +304,10 @@ describe('NoteMapper', () => {
 
     it('should merge tags from both notes', () => {
       const local = createInternalNote({
-        tags: [
-          { id: 'tag-1', name: 'local', created_at: Date.now() }
-        ]
+        tags: [{ id: 'tag-1', name: 'local', created_at: Date.now() }],
       });
       const remote = createInternalNote({
-        tags: [
-          { id: 'tag-2', name: 'remote', created_at: Date.now() }
-        ]
+        tags: [{ id: 'tag-2', name: 'remote', created_at: Date.now() }],
       });
 
       const { merged } = mapper.mergeNotes(local, remote);
@@ -324,14 +320,10 @@ describe('NoteMapper', () => {
     it('should handle duplicate tags', () => {
       const timestamp = Date.now();
       const local = createInternalNote({
-        tags: [
-          { id: 'tag-1', name: 'shared', created_at: timestamp }
-        ]
+        tags: [{ id: 'tag-1', name: 'shared', created_at: timestamp }],
       });
       const remote = createInternalNote({
-        tags: [
-          { id: 'tag-1', name: 'shared', created_at: timestamp + 1000 }
-        ]
+        tags: [{ id: 'tag-1', name: 'shared', created_at: timestamp + 1000 }],
       });
 
       const { merged } = mapper.mergeNotes(local, remote);
@@ -374,10 +366,10 @@ describe('NoteMapper', () => {
 
     it('should detect tag differences', () => {
       const a = createInternalNote({
-        tags: [{ id: 'tag-1', name: 'tag1', created_at: Date.now() }]
+        tags: [{ id: 'tag-1', name: 'tag1', created_at: Date.now() }],
       });
       const b = createInternalNote({
-        tags: [{ id: 'tag-2', name: 'tag2', created_at: Date.now() }]
+        tags: [{ id: 'tag-2', name: 'tag2', created_at: Date.now() }],
       });
 
       const diff = mapper.diffNotes(a, b);

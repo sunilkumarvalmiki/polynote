@@ -37,9 +37,7 @@ describe('ObsidianConnector', () => {
 
     it('should throw error if vault path does not exist', async () => {
       (existsSync as any).mockReturnValue(false);
-      await expect(connector.initialize()).rejects.toThrow(
-        'Obsidian vault not found: /test/vault'
-      );
+      await expect(connector.initialize()).rejects.toThrow('Obsidian vault not found: /test/vault');
     });
 
     it('should start file watcher on initialization', async () => {
@@ -50,12 +48,15 @@ describe('ObsidianConnector', () => {
 
       await connector.initialize();
 
-      expect(watch).toHaveBeenCalledWith('/test/vault', expect.objectContaining({
-        persistent: true,
-        ignoreInitial: false,
-        ignored: expect.any(RegExp),
-        awaitWriteFinish: expect.any(Object),
-      }));
+      expect(watch).toHaveBeenCalledWith(
+        '/test/vault',
+        expect.objectContaining({
+          persistent: true,
+          ignoreInitial: false,
+          ignored: expect.any(RegExp),
+          awaitWriteFinish: expect.any(Object),
+        })
+      );
       expect(mockWatcher.on).toHaveBeenCalledWith('add', expect.any(Function));
       expect(mockWatcher.on).toHaveBeenCalledWith('change', expect.any(Function));
       expect(mockWatcher.on).toHaveBeenCalledWith('unlink', expect.any(Function));
@@ -147,14 +148,11 @@ tags: [test, note]
 
     it('should recursively scan subdirectories', async () => {
       const mockStats = { birthtimeMs: 1704067200000, mtimeMs: 1704153600000 };
-      const readdirSyncMock = vi.spyOn(require('node:fs'), 'readdirSync')
-        .mockReturnValueOnce([
-          { name: 'subdir', isDirectory: () => true, isFile: () => false },
-        ])
-        .mockReturnValueOnce([
-          { name: 'note.md', isDirectory: () => false, isFile: () => true },
-        ]);
-      
+      const readdirSyncMock = vi
+        .spyOn(require('node:fs'), 'readdirSync')
+        .mockReturnValueOnce([{ name: 'subdir', isDirectory: () => true, isFile: () => false }])
+        .mockReturnValueOnce([{ name: 'note.md', isDirectory: () => false, isFile: () => true }]);
+
       vi.spyOn(require('node:fs'), 'statSync').mockReturnValue(mockStats);
       (readFileSync as any).mockReturnValue(mockFileContent);
 
@@ -251,11 +249,7 @@ tags: [test, note]
     });
 
     it('should process multiple notes', async () => {
-      const notes = [
-        mockNote,
-        { ...mockNote, id: 'note-456' },
-        { ...mockNote, id: 'note-789' },
-      ];
+      const notes = [mockNote, { ...mockNote, id: 'note-456' }, { ...mockNote, id: 'note-789' }];
 
       await connector.pushChanges(notes);
 
@@ -286,7 +280,7 @@ title: Test
 ---
 Content`;
       const mockStats = { birthtimeMs: 1704067200000, mtimeMs: 1704153600000 };
-      
+
       (matter as any).mockReturnValue({
         data: { id: 'test-id', title: 'Test' },
         content: 'Content',

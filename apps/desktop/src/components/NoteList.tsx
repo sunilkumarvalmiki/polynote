@@ -73,7 +73,7 @@ export function NoteList({ searchQuery, selectedNoteId, onNoteSelect }: NoteList
           position: 'relative',
         }}
       >
-        {virtualizer.getVirtualItems().map((virtualItem) => {
+        {virtualizer.getVirtualItems().map(virtualItem => {
           const note = notes[virtualItem.index];
           const isSelected = note.id === selectedNoteId;
 
@@ -94,9 +94,7 @@ export function NoteList({ searchQuery, selectedNoteId, onNoteSelect }: NoteList
                 onClick={() => onNoteSelect(note.id)}
                 className={clsx(
                   'w-full p-4 text-left border-b border-border transition-colors',
-                  isSelected
-                    ? 'bg-primary/10 border-l-4 border-l-primary'
-                    : 'hover:bg-muted'
+                  isSelected ? 'bg-primary/10 border-l-4 border-l-primary' : 'hover:bg-muted'
                 )}
               >
                 <h3
@@ -119,7 +117,7 @@ export function NoteList({ searchQuery, selectedNoteId, onNoteSelect }: NoteList
                   </span>
                   {note.tags && note.tags.length > 0 && (
                     <div className="flex gap-1">
-                      {note.tags.slice(0, 2).map((tag) => (
+                      {note.tags.slice(0, 2).map(tag => (
                         <span
                           key={tag}
                           className="px-1.5 py-0.5 bg-primary/10 text-primary rounded text-xs"

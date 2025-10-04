@@ -4,13 +4,7 @@
  */
 
 import { getPromptForOperation } from '../prompts';
-import {
-  ProviderLocation,
-  ProviderConfig,
-  AIRequest,
-  AIResponse,
-  StreamCallback,
-} from '../types';
+import { ProviderLocation, ProviderConfig, AIRequest, AIResponse, StreamCallback } from '../types';
 
 import { BaseProvider } from './BaseProvider';
 
@@ -134,15 +128,11 @@ export class OpenAIProvider extends BaseProvider {
         return await this.executeNonStreaming(openaiRequest);
       }
     } catch (error) {
-      return this.createErrorResponse(
-        error instanceof Error ? error : new Error(String(error))
-      );
+      return this.createErrorResponse(error instanceof Error ? error : new Error(String(error)));
     }
   }
 
-  private async executeNonStreaming(
-    request: OpenAIChatRequest
-  ): Promise<AIResponse> {
+  private async executeNonStreaming(request: OpenAIChatRequest): Promise<AIResponse> {
     const { result, durationMs } = await this.measureExecution(async () => {
       const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
         method: 'POST',

@@ -111,10 +111,8 @@ export function getRewritePrompt(content: string, style: RewriteStyle): string {
       'Rewrite in a casual, conversational tone suitable for informal communication',
     [RewriteStyle.CONCISE]:
       'Rewrite to be more concise and to-the-point while preserving all key information',
-    [RewriteStyle.DETAILED]:
-      'Expand and elaborate with more details and explanations',
-    [RewriteStyle.TECHNICAL]:
-      'Rewrite with more technical precision and specialized terminology',
+    [RewriteStyle.DETAILED]: 'Expand and elaborate with more details and explanations',
+    [RewriteStyle.TECHNICAL]: 'Rewrite with more technical precision and specialized terminology',
     [RewriteStyle.SIMPLE]:
       'Simplify the language to make it easier to understand for a general audience',
   };
@@ -138,10 +136,7 @@ Rewritten text:`;
 /**
  * Prompt template for chat/custom operations
  */
-export function getChatPrompt(
-  content: string,
-  customInstructions?: string
-): string {
+export function getChatPrompt(content: string, customInstructions?: string): string {
   const safeContent = redactSecrets(content);
   const instructions = customInstructions || 'Analyze and respond to the following content';
 

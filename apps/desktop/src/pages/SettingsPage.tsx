@@ -19,8 +19,7 @@ export function SettingsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (updates: Partial<Settings>) =>
-      window.electronAPI?.updateSettings(updates),
+    mutationFn: (updates: Partial<Settings>) => window.electronAPI?.updateSettings(updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
     },
@@ -33,23 +32,23 @@ export function SettingsPage() {
   }, [settings]);
 
   const handleThemeChange = (theme: 'light' | 'dark') => {
-    setLocalSettings((prev) => (prev ? { ...prev, theme } : null));
+    setLocalSettings(prev => (prev ? { ...prev, theme } : null));
     updateMutation.mutate({ theme });
     document.documentElement.classList.toggle('dark', theme === 'dark');
   };
 
   const handleLanguageChange = (language: 'en' | 'te' | 'hi') => {
-    setLocalSettings((prev) => (prev ? { ...prev, language } : null));
+    setLocalSettings(prev => (prev ? { ...prev, language } : null));
     updateMutation.mutate({ language });
   };
 
   const handleSyncIntervalChange = (syncInterval: number) => {
-    setLocalSettings((prev) => (prev ? { ...prev, syncInterval } : null));
+    setLocalSettings(prev => (prev ? { ...prev, syncInterval } : null));
     updateMutation.mutate({ syncInterval });
   };
 
   const handleAIProviderChange = (aiProvider: string) => {
-    setLocalSettings((prev) => (prev ? { ...prev, aiProvider } : null));
+    setLocalSettings(prev => (prev ? { ...prev, aiProvider } : null));
     updateMutation.mutate({ aiProvider });
   };
 
@@ -67,9 +66,7 @@ export function SettingsPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-1">
-            Configure your PolyNote experience
-          </p>
+          <p className="text-muted-foreground mt-1">Configure your PolyNote experience</p>
         </div>
 
         {/* Appearance */}
@@ -116,7 +113,7 @@ export function SettingsPage() {
             <label className="block text-sm font-medium mb-2">Interface Language</label>
             <select
               value={localSettings.language}
-              onChange={(e) => handleLanguageChange(e.target.value as any)}
+              onChange={e => handleLanguageChange(e.target.value as any)}
               className="w-full px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="en">English</option>
@@ -131,15 +128,13 @@ export function SettingsPage() {
           <h2 className="text-xl font-semibold">Sync Settings</h2>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Sync Interval (seconds)
-            </label>
+            <label className="block text-sm font-medium mb-2">Sync Interval (seconds)</label>
             <input
               type="number"
               min="60"
               max="3600"
               value={localSettings.syncInterval}
-              onChange={(e) => handleSyncIntervalChange(parseInt(e.target.value))}
+              onChange={e => handleSyncIntervalChange(parseInt(e.target.value))}
               className="w-full px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />
             <p className="text-xs text-muted-foreground mt-1">
@@ -153,12 +148,10 @@ export function SettingsPage() {
           <h2 className="text-xl font-semibold">AI Settings</h2>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Preferred AI Provider
-            </label>
+            <label className="block text-sm font-medium mb-2">Preferred AI Provider</label>
             <select
               value={localSettings.aiProvider}
-              onChange={(e) => handleAIProviderChange(e.target.value)}
+              onChange={e => handleAIProviderChange(e.target.value)}
               className="w-full px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="ollama">Ollama (Local)</option>

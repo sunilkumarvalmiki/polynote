@@ -19,15 +19,12 @@ export abstract class BaseConnector implements IConnector {
   /**
    * Retry logic with exponential backoff
    */
-  protected async retry<T>(
-    fn: () => Promise<T>,
-    retries: number = this.maxRetries
-  ): Promise<T> {
+  protected async retry<T>(fn: () => Promise<T>, retries: number = this.maxRetries): Promise<T> {
     try {
       return await fn();
     } catch (error) {
       if (retries === 0) throw error;
-      
+
       await this.sleep(this.retryDelay * (this.maxRetries - retries + 1));
       return this.retry(fn, retries - 1);
     }
@@ -50,11 +47,11 @@ export abstract class BaseConnector implements IConnector {
     return async <T>(fn: () => Promise<T>): Promise<T> => {
       const now = Date.now();
       const timeSinceLastCall = now - lastCall;
-      
+
       if (timeSinceLastCall < minInterval) {
         await this.sleep(minInterval - timeSinceLastCall);
       }
-      
+
       lastCall = Date.now();
       return fn();
     };

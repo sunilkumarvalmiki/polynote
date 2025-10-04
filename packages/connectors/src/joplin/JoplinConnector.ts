@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 
-import { Note , generateChecksum } from '@polynote/shared';
+import { Note, generateChecksum } from '@polynote/shared';
 
 import { BaseConnector } from '../base/BaseConnector.js';
 
@@ -42,7 +42,7 @@ export class JoplinConnector extends BaseConnector {
     this.client = axios.create({
       baseURL: this.config.apiUrl || 'http://localhost:41184',
       headers: {
-        'Authorization': `Bearer ${this.config.apiToken}`,
+        Authorization: `Bearer ${this.config.apiToken}`,
       },
       timeout: 10000,
     });
@@ -70,17 +70,16 @@ export class JoplinConnector extends BaseConnector {
 
     while (hasMore) {
       const params: any = {
-        fields: 'id,title,body,created_time,updated_time,user_created_time,user_updated_time,is_todo,todo_completed,parent_id',
+        fields:
+          'id,title,body,created_time,updated_time,user_created_time,user_updated_time,is_todo,todo_completed,parent_id',
         limit,
         page,
       };
 
-      const response = await this.retry(() =>
-        this.client!.get('/notes', { params })
-      );
+      const response = await this.retry(() => this.client!.get('/notes', { params }));
 
       const joplinNotes = response.data.items as JoplinNote[];
-      
+
       for (const joplinNote of joplinNotes) {
         const note = this.convertJoplinToNote(joplinNote);
         if (note && (!since || note.updated_at >= since.getTime())) {
@@ -110,7 +109,8 @@ export class JoplinConnector extends BaseConnector {
       const response = await this.retry(() =>
         this.client!.get(`/notes/${id}`, {
           params: {
-            fields: 'id,title,body,created_time,updated_time,user_created_time,user_updated_time,is_todo,todo_completed,parent_id',
+            fields:
+              'id,title,body,created_time,updated_time,user_created_time,user_updated_time,is_todo,todo_completed,parent_id',
           },
         })
       );
@@ -134,9 +134,7 @@ export class JoplinConnector extends BaseConnector {
       body: note.body,
     };
 
-    const response = await this.retry(() =>
-      this.client!.post('/notes', joplinNote)
-    );
+    const response = await this.retry(() => this.client!.post('/notes', joplinNote));
 
     const createdNote: Note = {
       id: response.data.id,
@@ -167,9 +165,7 @@ export class JoplinConnector extends BaseConnector {
     if (updates.title) joplinUpdate.title = updates.title;
     if (updates.body) joplinUpdate.body = updates.body;
 
-    await this.retry(() =>
-      this.client!.put(`/notes/${id}`, joplinUpdate)
-    );
+    await this.retry(() => this.client!.put(`/notes/${id}`, joplinUpdate));
 
     const updated: Note = {
       ...existing,
@@ -186,9 +182,7 @@ export class JoplinConnector extends BaseConnector {
       throw new Error('Joplin client not initialized');
     }
 
-    await this.retry(() =>
-      this.client!.delete(`/notes/${id}`)
-    );
+    await this.retry(() => this.client!.delete(`/notes/${id}`));
   }
 
   private convertJoplinToNote(joplinNote: JoplinNote): Note {

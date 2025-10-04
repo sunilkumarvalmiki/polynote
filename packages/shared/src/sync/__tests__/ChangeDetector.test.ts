@@ -19,16 +19,13 @@ describe('ChangeDetector', () => {
     source_connector: 'obsidian',
     source_id: 'test-note.md',
     checksum: 'abc123',
-    ...overrides
+    ...overrides,
   });
 
   describe('detectChanges', () => {
     it('should detect newly created notes', () => {
       const localNotes: Note[] = [];
-      const remoteNotes: Note[] = [
-        createNote({ id: 'note-1' }),
-        createNote({ id: 'note-2' })
-      ];
+      const remoteNotes: Note[] = [createNote({ id: 'note-1' }), createNote({ id: 'note-2' })];
 
       const result = detector.detectChanges(localNotes, remoteNotes, 'obsidian');
 
@@ -43,10 +40,10 @@ describe('ChangeDetector', () => {
     it('should detect updated notes based on timestamp', () => {
       const timestamp = Date.now();
       const localNotes: Note[] = [
-        createNote({ id: 'note-1', updated_at: timestamp, body: 'Old content' })
+        createNote({ id: 'note-1', updated_at: timestamp, body: 'Old content' }),
       ];
       const remoteNotes: Note[] = [
-        createNote({ id: 'note-1', updated_at: timestamp + 1000, body: 'New content' })
+        createNote({ id: 'note-1', updated_at: timestamp + 1000, body: 'New content' }),
       ];
 
       const result = detector.detectChanges(localNotes, remoteNotes, 'obsidian');
@@ -61,10 +58,10 @@ describe('ChangeDetector', () => {
     it('should detect updated notes based on content checksum', () => {
       const timestamp = Date.now();
       const localNotes: Note[] = [
-        createNote({ id: 'note-1', updated_at: timestamp, body: 'Content A' })
+        createNote({ id: 'note-1', updated_at: timestamp, body: 'Content A' }),
       ];
       const remoteNotes: Note[] = [
-        createNote({ id: 'note-1', updated_at: timestamp + 1000, body: 'Content B' })
+        createNote({ id: 'note-1', updated_at: timestamp + 1000, body: 'Content B' }),
       ];
 
       const result = detector.detectChanges(localNotes, remoteNotes, 'obsidian');
@@ -75,11 +72,9 @@ describe('ChangeDetector', () => {
     it('should detect deleted notes', () => {
       const localNotes: Note[] = [
         createNote({ id: 'note-1', source_connector: 'obsidian' }),
-        createNote({ id: 'note-2', source_connector: 'obsidian' })
+        createNote({ id: 'note-2', source_connector: 'obsidian' }),
       ];
-      const remoteNotes: Note[] = [
-        createNote({ id: 'note-1' })
-      ];
+      const remoteNotes: Note[] = [createNote({ id: 'note-1' })];
 
       const result = detector.detectChanges(localNotes, remoteNotes, 'obsidian');
 
@@ -93,7 +88,7 @@ describe('ChangeDetector', () => {
     it('should not delete notes from different sources', () => {
       const localNotes: Note[] = [
         createNote({ id: 'note-1', source_connector: 'notion' }),
-        createNote({ id: 'note-2', source_connector: 'obsidian' })
+        createNote({ id: 'note-2', source_connector: 'obsidian' }),
       ];
       const remoteNotes: Note[] = [];
 
@@ -131,12 +126,12 @@ describe('ChangeDetector', () => {
       const localNotes: Note[] = [
         createNote({ id: 'note-1', updated_at: timestamp, body: 'Old' }),
         createNote({ id: 'note-2', source_connector: 'obsidian' }),
-        createNote({ id: 'note-4', updated_at: timestamp, body: 'Same' })
+        createNote({ id: 'note-4', updated_at: timestamp, body: 'Same' }),
       ];
       const remoteNotes: Note[] = [
         createNote({ id: 'note-1', updated_at: timestamp + 1000, body: 'New' }),
         createNote({ id: 'note-3' }),
-        createNote({ id: 'note-4', updated_at: timestamp, body: 'Same' })
+        createNote({ id: 'note-4', updated_at: timestamp, body: 'Same' }),
       ];
 
       const result = detector.detectChanges(localNotes, remoteNotes, 'obsidian');
@@ -151,7 +146,7 @@ describe('ChangeDetector', () => {
   describe('detectSingleNoteChange', () => {
     it('should detect new note when local is null', () => {
       const remoteNote = createNote({ id: 'note-1' });
-      
+
       const change = detector.detectSingleNoteChange(null, remoteNote, 'obsidian');
 
       expect(change).toBeDefined();
@@ -161,7 +156,7 @@ describe('ChangeDetector', () => {
 
     it('should detect deleted note when remote is null', () => {
       const localNote = createNote({ id: 'note-1' });
-      
+
       const change = detector.detectSingleNoteChange(localNote, null, 'obsidian');
 
       expect(change).toBeDefined();
@@ -173,7 +168,7 @@ describe('ChangeDetector', () => {
       const timestamp = Date.now();
       const localNote = createNote({ id: 'note-1', updated_at: timestamp, body: 'Old' });
       const remoteNote = createNote({ id: 'note-1', updated_at: timestamp + 1000, body: 'New' });
-      
+
       const change = detector.detectSingleNoteChange(localNote, remoteNote, 'obsidian');
 
       expect(change).toBeDefined();
@@ -183,7 +178,7 @@ describe('ChangeDetector', () => {
     it('should return null for unchanged note', () => {
       const timestamp = Date.now();
       const note = createNote({ id: 'note-1', updated_at: timestamp, body: 'Same' });
-      
+
       const change = detector.detectSingleNoteChange(note, note, 'obsidian');
 
       expect(change).toBeNull();
@@ -200,14 +195,32 @@ describe('ChangeDetector', () => {
     it('should calculate correct statistics', () => {
       const result = {
         created: [
-          { noteId: '1', changeType: 'create' as const, source: 'test', timestamp: new Date(), checksum: 'a' },
-          { noteId: '2', changeType: 'create' as const, source: 'test', timestamp: new Date(), checksum: 'b' }
+          {
+            noteId: '1',
+            changeType: 'create' as const,
+            source: 'test',
+            timestamp: new Date(),
+            checksum: 'a',
+          },
+          {
+            noteId: '2',
+            changeType: 'create' as const,
+            source: 'test',
+            timestamp: new Date(),
+            checksum: 'b',
+          },
         ],
         updated: [
-          { noteId: '3', changeType: 'update' as const, source: 'test', timestamp: new Date(), checksum: 'c' }
+          {
+            noteId: '3',
+            changeType: 'update' as const,
+            source: 'test',
+            timestamp: new Date(),
+            checksum: 'c',
+          },
         ],
         deleted: [],
-        unchanged: 5
+        unchanged: 5,
       };
 
       const stats = detector.calculateStats(result);
@@ -224,7 +237,7 @@ describe('ChangeDetector', () => {
         created: [],
         updated: [],
         deleted: [],
-        unchanged: 0
+        unchanged: 0,
       };
 
       const stats = detector.calculateStats(result);
@@ -241,10 +254,10 @@ describe('ChangeDetector', () => {
     it('should handle notes with identical timestamps but different content', () => {
       const timestamp = Date.now();
       const localNotes: Note[] = [
-        createNote({ id: 'note-1', updated_at: timestamp, body: 'Content A' })
+        createNote({ id: 'note-1', updated_at: timestamp, body: 'Content A' }),
       ];
       const remoteNotes: Note[] = [
-        createNote({ id: 'note-1', updated_at: timestamp, body: 'Content B' })
+        createNote({ id: 'note-1', updated_at: timestamp, body: 'Content B' }),
       ];
 
       const result = detector.detectChanges(localNotes, remoteNotes, 'obsidian');
@@ -256,10 +269,10 @@ describe('ChangeDetector', () => {
     it('should handle notes with newer local timestamp', () => {
       const timestamp = Date.now();
       const localNotes: Note[] = [
-        createNote({ id: 'note-1', updated_at: timestamp + 1000, body: 'Newer local' })
+        createNote({ id: 'note-1', updated_at: timestamp + 1000, body: 'Newer local' }),
       ];
       const remoteNotes: Note[] = [
-        createNote({ id: 'note-1', updated_at: timestamp, body: 'Older remote' })
+        createNote({ id: 'note-1', updated_at: timestamp, body: 'Older remote' }),
       ];
 
       const result = detector.detectChanges(localNotes, remoteNotes, 'obsidian');
@@ -269,10 +282,10 @@ describe('ChangeDetector', () => {
     });
 
     it('should handle large note sets efficiently', () => {
-      const localNotes: Note[] = Array.from({ length: 1000 }, (_, i) => 
+      const localNotes: Note[] = Array.from({ length: 1000 }, (_, i) =>
         createNote({ id: `note-${i}`, body: `Content ${i}` })
       );
-      const remoteNotes: Note[] = Array.from({ length: 1000 }, (_, i) => 
+      const remoteNotes: Note[] = Array.from({ length: 1000 }, (_, i) =>
         createNote({ id: `note-${i}`, body: `Content ${i}` })
       );
 

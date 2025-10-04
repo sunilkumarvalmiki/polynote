@@ -210,9 +210,9 @@ describe('NotionConnector', () => {
         results: [mockPage],
         has_more: false,
       });
-      (connector as any).client.blocks.children.list = vi.fn().mockRejectedValue(
-        new Error('Block fetch failed')
-      );
+      (connector as any).client.blocks.children.list = vi
+        .fn()
+        .mockRejectedValue(new Error('Block fetch failed'));
 
       const notes = await connector.pullChanges();
 
@@ -319,9 +319,9 @@ describe('NotionConnector', () => {
     });
 
     it('should throw other errors', async () => {
-      (connector as any).client.pages.retrieve = vi.fn().mockRejectedValue(
-        new Error('Network error')
-      );
+      (connector as any).client.pages.retrieve = vi
+        .fn()
+        .mockRejectedValue(new Error('Network error'));
 
       // Mock retry to bypass retry logic
       vi.spyOn(connector as any, 'retry').mockImplementation((fn: any) => fn());

@@ -64,9 +64,7 @@ export class AccessControlService implements IAccessControlService {
   /**
    * Add a new access rule
    */
-  async addRule(
-    rule: Omit<AccessRule, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<AccessRule> {
+  async addRule(rule: Omit<AccessRule, 'id' | 'createdAt' | 'updatedAt'>): Promise<AccessRule> {
     const id = this.generateRuleId();
     const now = Date.now();
 
@@ -86,10 +84,7 @@ export class AccessControlService implements IAccessControlService {
    */
   async removeRule(ruleId: string): Promise<void> {
     if (!this.rules.has(ruleId)) {
-      throw new SecurityError(
-        `Rule not found: ${ruleId}`,
-        SecurityErrorCode.ACCESS_DENIED
-      );
+      throw new SecurityError(`Rule not found: ${ruleId}`, SecurityErrorCode.ACCESS_DENIED);
     }
 
     this.rules.delete(ruleId);
@@ -113,10 +108,7 @@ export class AccessControlService implements IAccessControlService {
     const rule = this.rules.get(ruleId);
 
     if (!rule) {
-      throw new SecurityError(
-        `Rule not found: ${ruleId}`,
-        SecurityErrorCode.ACCESS_DENIED
-      );
+      throw new SecurityError(`Rule not found: ${ruleId}`, SecurityErrorCode.ACCESS_DENIED);
     }
 
     const updatedRule: AccessRule = {

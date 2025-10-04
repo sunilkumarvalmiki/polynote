@@ -51,9 +51,7 @@ describe('EncryptionService', () => {
       const plaintext = Buffer.from('Secret data', 'utf-8');
       const encrypted = await encryption.encrypt(plaintext, 'key-1');
 
-      await expect(
-        encryption.decrypt(encrypted, 'key-2')
-      ).rejects.toThrow();
+      await expect(encryption.decrypt(encrypted, 'key-2')).rejects.toThrow();
     });
 
     it('should handle empty data', async () => {
@@ -147,9 +145,7 @@ console.log('Hello');
       const encrypted = await encryption.encryptAttachment(id, data);
 
       // Try to decrypt as note (should fail because metadata has attachment ID)
-      await expect(
-        encryption.decryptNote(id, encrypted)
-      ).rejects.toThrow();
+      await expect(encryption.decryptNote(id, encrypted)).rejects.toThrow();
     });
   });
 
@@ -166,11 +162,15 @@ console.log('Hello');
       await encryption.encryptFile(testFilePath, 'file-key');
 
       // Original file should be deleted
-      const exists = await fs.access(testFilePath).then(() => true).catch(() => false);
+      const exists = await fs
+        .access(testFilePath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(false);
 
       // Encrypted file should exist
-      const encryptedExists = await fs.access(`${testFilePath}.encrypted`)
+      const encryptedExists = await fs
+        .access(`${testFilePath}.encrypted`)
         .then(() => true)
         .catch(() => false);
       expect(encryptedExists).toBe(true);
@@ -192,7 +192,7 @@ console.log('Hello');
     });
 
     it('should handle binary files', async () => {
-      const binaryData = Buffer.from([0x00, 0x01, 0x02, 0xFF, 0xFE, 0xFD]);
+      const binaryData = Buffer.from([0x00, 0x01, 0x02, 0xff, 0xfe, 0xfd]);
       const binaryFilePath = '/tmp/test-binary-file.bin';
 
       await fs.writeFile(binaryFilePath, binaryData);
@@ -236,9 +236,9 @@ console.log('Hello');
       const uninitKms = new KeyManagementService();
       const uninitEncryption = new EncryptionService(uninitKms);
 
-      await expect(
-        uninitEncryption.encrypt(Buffer.from('test'), 'key')
-      ).rejects.toThrow('not initialized');
+      await expect(uninitEncryption.encrypt(Buffer.from('test'), 'key')).rejects.toThrow(
+        'not initialized'
+      );
     });
 
     it('should throw error on corrupted ciphertext', async () => {
@@ -246,11 +246,9 @@ console.log('Hello');
       const encrypted = await encryption.encrypt(data, 'key');
 
       // Corrupt the ciphertext
-      encrypted.ciphertext[0] ^= 0xFF;
+      encrypted.ciphertext[0] ^= 0xff;
 
-      await expect(
-        encryption.decrypt(encrypted, 'key')
-      ).rejects.toThrow();
+      await expect(encryption.decrypt(encrypted, 'key')).rejects.toThrow();
     });
 
     it('should throw error on corrupted nonce', async () => {
@@ -258,11 +256,9 @@ console.log('Hello');
       const encrypted = await encryption.encrypt(data, 'key');
 
       // Corrupt the nonce
-      encrypted.metadata.nonce[0] ^= 0xFF;
+      encrypted.metadata.nonce[0] ^= 0xff;
 
-      await expect(
-        encryption.decrypt(encrypted, 'key')
-      ).rejects.toThrow();
+      await expect(encryption.decrypt(encrypted, 'key')).rejects.toThrow();
     });
   });
 

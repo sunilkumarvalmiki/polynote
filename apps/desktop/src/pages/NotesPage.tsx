@@ -35,11 +35,7 @@ export function NotesPage() {
       <div className="w-96 border-r border-border flex flex-col">
         {/* Search Bar */}
         <div className="p-4 border-b border-border">
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search notes..."
-          />
+          <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search notes..." />
           <button
             onClick={handleNoteCreate}
             className="w-full mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"

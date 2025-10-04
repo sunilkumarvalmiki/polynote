@@ -19,12 +19,54 @@ import { ensureBuffer } from '../utils/buffer';
  * In production, use a full BIP39 implementation
  */
 const WORD_LIST = [
-  'abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract',
-  'absurd', 'abuse', 'access', 'accident', 'account', 'accuse', 'achieve', 'acid',
-  'acoustic', 'acquire', 'across', 'act', 'action', 'actor', 'actress', 'actual',
-  'adapt', 'add', 'addict', 'address', 'adjust', 'admit', 'adult', 'advance',
-  'advice', 'aerobic', 'affair', 'afford', 'afraid', 'again', 'age', 'agent',
-  'agree', 'ahead', 'aim', 'air', 'airport', 'aisle', 'alarm', 'album',
+  'abandon',
+  'ability',
+  'able',
+  'about',
+  'above',
+  'absent',
+  'absorb',
+  'abstract',
+  'absurd',
+  'abuse',
+  'access',
+  'accident',
+  'account',
+  'accuse',
+  'achieve',
+  'acid',
+  'acoustic',
+  'acquire',
+  'across',
+  'act',
+  'action',
+  'actor',
+  'actress',
+  'actual',
+  'adapt',
+  'add',
+  'addict',
+  'address',
+  'adjust',
+  'admit',
+  'adult',
+  'advance',
+  'advice',
+  'aerobic',
+  'affair',
+  'afford',
+  'afraid',
+  'again',
+  'age',
+  'agent',
+  'agree',
+  'ahead',
+  'aim',
+  'air',
+  'airport',
+  'aisle',
+  'alarm',
+  'album',
   // ... (simplified list - use full BIP39 in production)
 ];
 
@@ -118,10 +160,7 @@ export class KeyManagementService implements IKeyManagementService {
    */
   async generateRecoveryPhrase(): Promise<string> {
     if (!this.initialized || !this.masterKey || !this.sodium) {
-      throw new SecurityError(
-        'KMS not initialized',
-        SecurityErrorCode.NOT_INITIALIZED
-      );
+      throw new SecurityError('KMS not initialized', SecurityErrorCode.NOT_INITIALIZED);
     }
 
     try {
@@ -200,10 +239,7 @@ export class KeyManagementService implements IKeyManagementService {
    */
   async exportMasterKey(password: string): Promise<Buffer> {
     if (!this.initialized || !this.masterKey || !this.sodium || !this.salt) {
-      throw new SecurityError(
-        'KMS not initialized',
-        SecurityErrorCode.NOT_INITIALIZED
-      );
+      throw new SecurityError('KMS not initialized', SecurityErrorCode.NOT_INITIALIZED);
     }
 
     try {
@@ -279,10 +315,7 @@ export class KeyManagementService implements IKeyManagementService {
    */
   async rotateMasterKey(newConfig: MasterKeyConfig): Promise<void> {
     if (!this.initialized || !this.masterKey || !this.sodium) {
-      throw new SecurityError(
-        'KMS not initialized',
-        SecurityErrorCode.NOT_INITIALIZED
-      );
+      throw new SecurityError('KMS not initialized', SecurityErrorCode.NOT_INITIALIZED);
     }
 
     try {

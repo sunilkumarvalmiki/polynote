@@ -77,7 +77,7 @@ export function RulesPage() {
                 <input
                   type="text"
                   value={newRule.name}
-                  onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
+                  onChange={e => setNewRule({ ...newRule, name: e.target.value })}
                   placeholder="e.g., Blog posts to Notion"
                   className="w-full px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
@@ -87,7 +87,7 @@ export function RulesPage() {
                 <input
                   type="text"
                   value={newRule.condition}
-                  onChange={(e) => setNewRule({ ...newRule, condition: e.target.value })}
+                  onChange={e => setNewRule({ ...newRule, condition: e.target.value })}
                   placeholder="e.g., tag:blog"
                   className="w-full px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
@@ -97,7 +97,7 @@ export function RulesPage() {
                 <input
                   type="text"
                   value={newRule.action}
-                  onChange={(e) => setNewRule({ ...newRule, action: e.target.value })}
+                  onChange={e => setNewRule({ ...newRule, action: e.target.value })}
                   placeholder="e.g., sync-to:notion"
                   className="w-full px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
@@ -130,7 +130,7 @@ export function RulesPage() {
               </p>
             </div>
           ) : (
-            rules.map((rule) => (
+            rules.map(rule => (
               <div
                 key={rule.id}
                 className={clsx(

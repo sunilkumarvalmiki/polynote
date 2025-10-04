@@ -107,20 +107,20 @@ export interface IElectronAPI {
 // Expose protected methods to renderer process
 const api: IElectronAPI = {
   // Notes API
-  getNotes: (filter) => ipcRenderer.invoke('notes:get-all', filter),
-  getNote: (noteId) => ipcRenderer.invoke('notes:get-one', noteId),
-  createNote: (note) => ipcRenderer.invoke('notes:create', note),
+  getNotes: filter => ipcRenderer.invoke('notes:get-all', filter),
+  getNote: noteId => ipcRenderer.invoke('notes:get-one', noteId),
+  createNote: note => ipcRenderer.invoke('notes:create', note),
   updateNote: (noteId, updates) => ipcRenderer.invoke('notes:update', noteId, updates),
-  deleteNote: (noteId) => ipcRenderer.invoke('notes:delete', noteId),
+  deleteNote: noteId => ipcRenderer.invoke('notes:delete', noteId),
 
   // Search API
   searchNotes: (query, options) => ipcRenderer.invoke('search:notes', query, options),
 
   // Sync API
   getSyncStatus: () => ipcRenderer.invoke('sync:get-status'),
-  startSync: (connectorId) => ipcRenderer.invoke('sync:start', connectorId),
+  startSync: connectorId => ipcRenderer.invoke('sync:start', connectorId),
   pauseSync: () => ipcRenderer.invoke('sync:pause'),
-  onSyncProgress: (callback) => {
+  onSyncProgress: callback => {
     const subscription = (_event: IpcRendererEvent, progress: SyncProgress) => callback(progress);
     ipcRenderer.on('sync:progress', subscription);
     return () => {
@@ -134,22 +134,22 @@ const api: IElectronAPI = {
   rewriteNote: (noteId, style) => ipcRenderer.invoke('ai:rewrite', noteId, style),
 
   // Graph API
-  getGraph: (options) => ipcRenderer.invoke('graph:get', options),
+  getGraph: options => ipcRenderer.invoke('graph:get', options),
 
   // Rules API
   getRules: () => ipcRenderer.invoke('rules:get-all'),
-  createRule: (rule) => ipcRenderer.invoke('rules:create', rule),
+  createRule: rule => ipcRenderer.invoke('rules:create', rule),
   updateRule: (ruleId, updates) => ipcRenderer.invoke('rules:update', ruleId, updates),
-  deleteRule: (ruleId) => ipcRenderer.invoke('rules:delete', ruleId),
+  deleteRule: ruleId => ipcRenderer.invoke('rules:delete', ruleId),
 
   // Settings API
   getSettings: () => ipcRenderer.invoke('settings:get'),
-  updateSettings: (updates) => ipcRenderer.invoke('settings:update', updates),
+  updateSettings: updates => ipcRenderer.invoke('settings:update', updates),
 
   // System API
-  openExternal: (url) => ipcRenderer.invoke('system:open-external', url),
+  openExternal: url => ipcRenderer.invoke('system:open-external', url),
   getAppVersion: () => ipcRenderer.invoke('system:get-version'),
-  getAppPath: (name) => ipcRenderer.invoke('system:get-path', name),
+  getAppPath: name => ipcRenderer.invoke('system:get-path', name),
 };
 
 // Expose API to renderer process via contextBridge

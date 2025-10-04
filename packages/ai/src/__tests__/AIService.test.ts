@@ -209,7 +209,7 @@ describe('AIService', () => {
     });
 
     it('should rewrite in formal style', async () => {
-      const response = await service.rewrite('Hey, what\'s up?', {
+      const response = await service.rewrite("Hey, what's up?", {
         style: RewriteStyle.FORMAL,
       });
 
@@ -275,10 +275,7 @@ describe('AIService', () => {
     });
 
     it('should perform chat operation', async () => {
-      const response = await service.chat(
-        'Some content',
-        'Analyze this content'
-      );
+      const response = await service.chat('Some content', 'Analyze this content');
 
       expect(response.content).toBeDefined();
     });

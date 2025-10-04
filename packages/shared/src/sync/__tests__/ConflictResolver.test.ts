@@ -22,7 +22,7 @@ describe('ConflictResolver', () => {
     updated_at: 2000,
     checksum: generateChecksum('Test|Content|2000'),
     tags: [],
-    ...overrides
+    ...overrides,
   });
 
   describe('detectConflict', () => {
@@ -49,11 +49,11 @@ describe('ConflictResolver', () => {
     it('should return true when notes have different checksums and same source_id', () => {
       const noteA = createNote({
         body: 'Content A',
-        checksum: generateChecksum('Test|Content A|2000')
+        checksum: generateChecksum('Test|Content A|2000'),
       });
       const noteB = createNote({
         body: 'Content B',
-        checksum: generateChecksum('Test|Content B|2000')
+        checksum: generateChecksum('Test|Content B|2000'),
       });
       const result = resolver.detectConflict(noteA, noteB);
       expect(result).toBe(true);
@@ -63,15 +63,15 @@ describe('ConflictResolver', () => {
       const base = createNote({
         body: 'Original',
         checksum: generateChecksum('Test|Original|1000'),
-        updated_at: 1000
+        updated_at: 1000,
       });
       const noteA = createNote({
         body: 'Changed A',
-        checksum: generateChecksum('Test|Changed A|2000')
+        checksum: generateChecksum('Test|Changed A|2000'),
       });
       const noteB = createNote({
         body: 'Changed B',
-        checksum: generateChecksum('Test|Changed B|2000')
+        checksum: generateChecksum('Test|Changed B|2000'),
       });
       const result = resolver.detectConflict(noteA, noteB, base);
       expect(result).toBe(true);
@@ -81,11 +81,11 @@ describe('ConflictResolver', () => {
       const base = createNote({
         body: 'Original',
         checksum: generateChecksum('Test|Original|1000'),
-        updated_at: 1000
+        updated_at: 1000,
       });
       const noteA = createNote({
         body: 'Changed A',
-        checksum: generateChecksum('Test|Changed A|2000')
+        checksum: generateChecksum('Test|Changed A|2000'),
       });
       const noteB = createNote({ ...base });
       const result = resolver.detectConflict(noteA, noteB, base);
@@ -97,9 +97,9 @@ describe('ConflictResolver', () => {
     it('should return newer note when no conflict exists', () => {
       const older = createNote({ updated_at: 1000 });
       const newer = createNote({ updated_at: 2000 });
-      
+
       const result = resolver.merge(older, newer);
-      
+
       expect(result.merged).toBe(true);
       expect(result.note).toEqual(newer);
       expect(result.conflict).toBeUndefined();
@@ -109,12 +109,12 @@ describe('ConflictResolver', () => {
       const base = createNote({
         body: 'Original',
         checksum: generateChecksum('Test|Original|1000'),
-        updated_at: 1000
+        updated_at: 1000,
       });
       const noteA = createNote({
         body: 'Changed',
         checksum: generateChecksum('Test|Changed|2000'),
-        updated_at: 2000
+        updated_at: 2000,
       });
       const noteB = createNote({ ...base });
 
@@ -129,13 +129,13 @@ describe('ConflictResolver', () => {
       const base = createNote({
         body: 'Original',
         checksum: generateChecksum('Test|Original|1000'),
-        updated_at: 1000
+        updated_at: 1000,
       });
       const noteA = createNote({ ...base });
       const noteB = createNote({
         body: 'Changed',
         checksum: generateChecksum('Test|Changed|2000'),
-        updated_at: 2000
+        updated_at: 2000,
       });
 
       const result = resolver.merge(noteA, noteB, base);
@@ -150,19 +150,19 @@ describe('ConflictResolver', () => {
         title: 'Original Title',
         body: 'Original Body',
         checksum: generateChecksum('Original Title|Original Body|1000'),
-        updated_at: 1000
+        updated_at: 1000,
       });
       const noteA = createNote({
         title: 'New Title',
         body: 'Original Body',
         checksum: generateChecksum('New Title|Original Body|2000'),
-        updated_at: 2000
+        updated_at: 2000,
       });
       const noteB = createNote({
         title: 'Original Title',
         body: 'New Body',
         checksum: generateChecksum('Original Title|New Body|2000'),
-        updated_at: 2000
+        updated_at: 2000,
       });
 
       const result = resolver.merge(noteA, noteB, base);
@@ -176,17 +176,17 @@ describe('ConflictResolver', () => {
       const base = createNote({
         body: 'Original',
         checksum: generateChecksum('Test|Original|1000'),
-        updated_at: 1000
+        updated_at: 1000,
       });
       const noteA = createNote({
         body: 'Changed A',
         checksum: generateChecksum('Test|Changed A|2000'),
-        updated_at: 2000
+        updated_at: 2000,
       });
       const noteB = createNote({
         body: 'Changed B',
         checksum: generateChecksum('Test|Changed B|2000'),
-        updated_at: 2000
+        updated_at: 2000,
       });
 
       const result = resolver.merge(noteA, noteB, base);
@@ -202,11 +202,11 @@ describe('ConflictResolver', () => {
     it('should create conflict when no base version available', () => {
       const noteA = createNote({
         body: 'Content A',
-        checksum: generateChecksum('Test|Content A|2000')
+        checksum: generateChecksum('Test|Content A|2000'),
       });
       const noteB = createNote({
         body: 'Content B',
-        checksum: generateChecksum('Test|Content B|2000')
+        checksum: generateChecksum('Test|Content B|2000'),
       });
 
       const result = resolver.merge(noteA, noteB);
@@ -220,12 +220,12 @@ describe('ConflictResolver', () => {
       const noteA = createNote({
         source_connector: 'obsidian',
         body: 'Content A',
-        checksum: generateChecksum('Test|Content A|2000')
+        checksum: generateChecksum('Test|Content A|2000'),
       });
       const noteB = createNote({
         source_connector: 'notion',
         body: 'Content B',
-        checksum: generateChecksum('Test|Content B|2000')
+        checksum: generateChecksum('Test|Content B|2000'),
       });
 
       const result = resolver.merge(noteA, noteB);
@@ -242,15 +242,15 @@ describe('ConflictResolver', () => {
     it('should include base version in conflict file when available', () => {
       const base = createNote({
         body: 'Original',
-        checksum: generateChecksum('Test|Original|1000')
+        checksum: generateChecksum('Test|Original|1000'),
       });
       const noteA = createNote({
         body: 'Changed A',
-        checksum: generateChecksum('Test|Changed A|2000')
+        checksum: generateChecksum('Test|Changed A|2000'),
       });
       const noteB = createNote({
         body: 'Changed B',
-        checksum: generateChecksum('Test|Changed B|2000')
+        checksum: generateChecksum('Test|Changed B|2000'),
       });
 
       const result = resolver.merge(noteA, noteB, base);
@@ -265,12 +265,12 @@ describe('ConflictResolver', () => {
       const base = createNote({
         tags: [tag1],
         checksum: generateChecksum('Test|Content|1000'),
-        updated_at: 1000
+        updated_at: 1000,
       });
       const noteA = createNote({
         tags: [tag1, tag2],
         checksum: generateChecksum('Test|Content|2000'),
-        updated_at: 2000
+        updated_at: 2000,
       });
       const noteB = createNote({ ...base });
 
@@ -284,12 +284,12 @@ describe('ConflictResolver', () => {
       const base = createNote({
         body: '',
         checksum: generateChecksum('Test||1000'),
-        updated_at: 1000
+        updated_at: 1000,
       });
       const noteA = createNote({
         body: 'New content',
         checksum: generateChecksum('Test|New content|2000'),
-        updated_at: 2000
+        updated_at: 2000,
       });
       const noteB = createNote({ ...base });
 
@@ -309,7 +309,7 @@ describe('ConflictResolver', () => {
         connector_b: 'notion',
         version_a: 'checksum-a',
         version_b: 'checksum-b',
-        created_at: 1000
+        created_at: 1000,
       };
       const noteA = createNote({ body: 'Content A' });
       const noteB = createNote({ body: 'Content B' });
@@ -330,7 +330,7 @@ describe('ConflictResolver', () => {
         connector_b: 'notion',
         version_a: 'checksum-a',
         version_b: 'checksum-b',
-        created_at: 1000
+        created_at: 1000,
       };
       const noteA = createNote({ body: 'Content A' });
       const noteB = createNote({ body: 'Content B' });
@@ -353,10 +353,10 @@ describe('ConflictResolver', () => {
         connector_b: 'notion',
         version_a: 'checksum-a',
         version_b: 'checksum-b',
-        created_at: 1000
+        created_at: 1000,
       };
       const mergedNote = createNote({
-        body: 'Manually merged content'
+        body: 'Manually merged content',
       });
 
       const result = resolver.resolveConflictManually(conflict, mergedNote);
@@ -376,11 +376,11 @@ describe('ConflictResolver', () => {
         connector_b: 'notion',
         version_a: 'checksum-a',
         version_b: 'checksum-b',
-        created_at: 1000
+        created_at: 1000,
       };
       const mergedNote = createNote({
         title: 'Merged Title',
-        body: 'Merged Body'
+        body: 'Merged Body',
       });
 
       const result = resolver.resolveConflictManually(conflict, mergedNote);
@@ -394,36 +394,36 @@ describe('ConflictResolver', () => {
     it('should handle notes with undefined tags', () => {
       const noteA = createNote({ tags: undefined });
       const noteB = createNote({ tags: undefined });
-      
+
       const result = resolver.detectConflict(noteA, noteB);
-      
+
       expect(result).toBe(false);
     });
 
     it('should handle notes with empty tags array', () => {
       const noteA = createNote({ tags: [] });
       const noteB = createNote({ tags: [] });
-      
+
       const result = resolver.detectConflict(noteA, noteB);
-      
+
       expect(result).toBe(false);
     });
 
     it('should handle notes with undefined attachments', () => {
       const noteA = createNote({ attachments: undefined });
       const noteB = createNote({ attachments: undefined });
-      
+
       const result = resolver.detectConflict(noteA, noteB);
-      
+
       expect(result).toBe(false);
     });
 
     it('should handle notes with undefined links', () => {
       const noteA = createNote({ links: undefined });
       const noteB = createNote({ links: undefined });
-      
+
       const result = resolver.detectConflict(noteA, noteB);
-      
+
       expect(result).toBe(false);
     });
 
@@ -432,7 +432,7 @@ describe('ConflictResolver', () => {
       const noteA = createNote({
         id: 'original-id',
         body: 'Changed',
-        checksum: generateChecksum('Test|Changed|2000')
+        checksum: generateChecksum('Test|Changed|2000'),
       });
       const noteB = createNote({ ...base, id: 'original-id' });
 
@@ -447,7 +447,7 @@ describe('ConflictResolver', () => {
       const noteA = createNote({
         body: 'Changed',
         checksum: generateChecksum('Test|Changed|3000'),
-        updated_at: 3000
+        updated_at: 3000,
       });
       const noteB = createNote({ ...base, updated_at: 2000 });
 
@@ -460,11 +460,11 @@ describe('ConflictResolver', () => {
     it('should generate unique conflict IDs', async () => {
       const noteA = createNote({
         body: 'Content A',
-        checksum: generateChecksum('Test|Content A|2000')
+        checksum: generateChecksum('Test|Content A|2000'),
       });
       const noteB = createNote({
         body: 'Content B',
-        checksum: generateChecksum('Test|Content B|2000')
+        checksum: generateChecksum('Test|Content B|2000'),
       });
 
       const result1 = resolver.merge(noteA, noteB);

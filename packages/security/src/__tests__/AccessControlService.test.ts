@@ -64,9 +64,7 @@ describe('AccessControlService', () => {
     });
 
     it('should throw error when removing non-existent rule', async () => {
-      await expect(
-        access.removeRule('non-existent-id')
-      ).rejects.toThrow('not found');
+      await expect(access.removeRule('non-existent-id')).rejects.toThrow('not found');
     });
 
     it('should get all rules for a resource', async () => {

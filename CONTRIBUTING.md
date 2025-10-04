@@ -261,18 +261,22 @@ git commit -m "feat(ai): add translation support" -m "Supports EN, TE, and HI la
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Documentation update
 - [ ] Code refactoring
 
 ## Testing
+
 How was this tested?
 
 ## Checklist
+
 - [ ] Tests added/updated
 - [ ] Documentation updated
 - [ ] No breaking changes
@@ -303,6 +307,7 @@ How was this tested?
 ### Recognition
 
 Contributors will be recognized in:
+
 - README.md contributors section
 - Release notes
 - Project website (when available)
@@ -321,10 +326,11 @@ We're building a strong community of Indian open-source contributors. Join us to
 ## Questions?
 
 Feel free to ask questions in:
+
 - GitHub Discussions
 - Issue comments
 - Pull request comments
 
 **Happy Contributing! 🚀**
 
-*Made with ❤️ in India*
+_Made with ❤️ in India_

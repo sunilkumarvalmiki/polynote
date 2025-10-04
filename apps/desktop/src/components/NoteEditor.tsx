@@ -37,8 +37,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: (updates: Partial<Note>) =>
-      window.electronAPI?.updateNote(noteId, updates),
+    mutationFn: (updates: Partial<Note>) => window.electronAPI?.updateNote(noteId, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       queryClient.invalidateQueries({ queryKey: ['note', noteId] });
@@ -97,7 +96,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
     setAiLoading(true);
     try {
       const summary = await window.electronAPI?.summarizeNote(noteId);
-      setBody((prev) => `${prev}\n\n## AI Summary\n\n${summary}`);
+      setBody(prev => `${prev}\n\n## AI Summary\n\n${summary}`);
     } catch (error) {
       console.error('Failed to summarize:', error);
     } finally {
@@ -233,7 +232,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
             <h1 className="text-4xl font-bold mb-8">{title || 'Untitled'}</h1>
             {tags.length > 0 && (
               <div className="flex gap-2 mb-8">
-                {tags.map((tag) => (
+                {tags.map(tag => (
                   <span
                     key={tag}
                     className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
@@ -244,9 +243,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
               </div>
             )}
             <div className="prose prose-slate dark:prose-invert max-w-none">
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkFrontmatter]}>
-                {body}
-              </ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm, remarkFrontmatter]}>{body}</ReactMarkdown>
             </div>
           </div>
         ) : (
@@ -256,7 +253,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={e => setTitle(e.target.value)}
               placeholder="Note title..."
               className="w-full text-3xl font-bold bg-transparent border-none focus:outline-none"
             />
@@ -267,7 +264,14 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
                 type="text"
                 placeholder="Add tags (comma-separated)..."
                 value={tags.join(', ')}
-                onChange={(e) => setTags(e.target.value.split(',').map((t) => t.trim()).filter(Boolean))}
+                onChange={e =>
+                  setTags(
+                    e.target.value
+                      .split(',')
+                      .map(t => t.trim())
+                      .filter(Boolean)
+                  )
+                }
                 className="flex-1 px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -275,7 +279,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
             {/* Body */}
             <textarea
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onChange={e => setBody(e.target.value)}
               placeholder="Start writing..."
               className="w-full flex-1 min-h-[500px] p-4 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm resize-none"
               spellCheck={false}

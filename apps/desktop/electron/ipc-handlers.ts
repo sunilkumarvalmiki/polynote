@@ -62,16 +62,15 @@ export function registerIpcHandlers(): void {
       let notes = [...mockNotes];
 
       if (filter?.search) {
-        notes = notes.filter(note =>
-          note.title.toLowerCase().includes(filter.search!.toLowerCase()) ||
-          note.body.toLowerCase().includes(filter.search!.toLowerCase())
+        notes = notes.filter(
+          note =>
+            note.title.toLowerCase().includes(filter.search!.toLowerCase()) ||
+            note.body.toLowerCase().includes(filter.search!.toLowerCase())
         );
       }
 
       if (filter?.tags && filter.tags.length > 0) {
-        notes = notes.filter(note =>
-          filter.tags!.some(tag => note.tags?.includes(tag))
-        );
+        notes = notes.filter(note => filter.tags!.some(tag => note.tags?.includes(tag)));
       }
 
       return notes;
@@ -154,9 +153,10 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('search:notes', (_, query: string) => {
     try {
       // TODO: Replace with actual FTS5 search
-      const results = mockNotes.filter(note =>
-        note.title.toLowerCase().includes(query.toLowerCase()) ||
-        note.body.toLowerCase().includes(query.toLowerCase())
+      const results = mockNotes.filter(
+        note =>
+          note.title.toLowerCase().includes(query.toLowerCase()) ||
+          note.body.toLowerCase().includes(query.toLowerCase())
       );
       return results;
     } catch (error) {
@@ -387,6 +387,8 @@ export function registerIpcHandlers(): void {
     if (!allowedPaths.includes(name)) {
       throw new Error(`Invalid path name: ${name}`);
     }
-    return app.getPath(name as 'home' | 'appData' | 'userData' | 'temp' | 'downloads' | 'documents');
+    return app.getPath(
+      name as 'home' | 'appData' | 'userData' | 'temp' | 'downloads' | 'documents'
+    );
   });
 }

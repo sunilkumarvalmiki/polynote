@@ -17,7 +17,7 @@ describe('SyncQueue', () => {
       updated_at: Date.now(),
       source_connector: 'obsidian',
       source_id: 'test.md',
-      checksum: 'abc123'
+      checksum: 'abc123',
     };
   });
 
@@ -27,7 +27,7 @@ describe('SyncQueue', () => {
 
       expect(taskId).toBeDefined();
       expect(taskId).toMatch(/^task-/);
-      
+
       const progress = queue.getProgress();
       expect(progress.pending).toBe(1);
       expect(progress.total).toBe(1);
@@ -140,19 +140,19 @@ describe('SyncQueue', () => {
 
       expect(progress.completed).toBe(0);
       expect(progress.failed).toBe(1);
-      
+
       const failed = retryQueue.getTasksByStatus('failed');
       expect(failed[0].error).toBe('Persistent failure');
       expect(failed[0].retryCount).toBe(2);
     });
 
     it('should apply exponential backoff', async () => {
-      const retryQueue = new SyncQueue({ 
-        maxRetries: 3, 
-        retryDelay: 100, 
-        retryBackoff: 2 
+      const retryQueue = new SyncQueue({
+        maxRetries: 3,
+        retryDelay: 100,
+        retryBackoff: 2,
       });
-      
+
       const timestamps: number[] = [];
       let attempts = 0;
 
@@ -265,7 +265,7 @@ describe('SyncQueue', () => {
 
       const obsidianTasks = queue.getTasksByConnector('obsidian');
       expect(obsidianTasks).toHaveLength(2);
-      
+
       const notionTasks = queue.getTasksByConnector('notion');
       expect(notionTasks).toHaveLength(1);
     });
@@ -280,7 +280,7 @@ describe('SyncQueue', () => {
 
       const completed = queue.getTasksByStatus('completed');
       const failed = queue.getTasksByStatus('failed');
-      
+
       expect(completed).toHaveLength(0);
       expect(failed).toHaveLength(0);
     });
@@ -317,7 +317,7 @@ describe('SyncQueue', () => {
   describe('retryFailed', () => {
     it('should retry all failed tasks', async () => {
       queue.enqueue('create', mockNote, 'obsidian');
-      
+
       let shouldFail = true;
       await queue.run(async () => {
         if (shouldFail) {
@@ -468,7 +468,7 @@ describe('SyncQueue', () => {
       });
 
       queue.enqueue('create', mockNote, 'obsidian');
-      
+
       // Should not throw
       await expect(queue.run(async () => {})).resolves.toBeDefined();
     });

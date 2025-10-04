@@ -7,7 +7,7 @@ import { BaseConnector } from '../base/BaseConnector';
 // Mock implementation of BaseConnector for testing
 class TestConnector extends BaseConnector {
   name = 'test-connector';
-  
+
   async initialize(): Promise<void> {
     return Promise.resolve();
   }
@@ -133,7 +133,7 @@ describe('BaseConnector', () => {
       const start = Date.now();
       await connector['sleep'](100);
       const elapsed = Date.now() - start;
-      
+
       expect(elapsed).toBeGreaterThanOrEqual(90); // Allow 10ms tolerance
     });
   });
@@ -160,7 +160,7 @@ describe('BaseConnector', () => {
     it('should pass through return values', async () => {
       const limiter = connector['createRateLimiter'](100);
       const result = await limiter(async () => 'test-value');
-      
+
       expect(result).toBe('test-value');
     });
   });
@@ -180,8 +180,7 @@ describe('BaseConnector', () => {
         body: 'Test body',
       };
 
-      expect(() => connector['validateNote'](invalidNote))
-        .toThrow('Note title is required');
+      expect(() => connector['validateNote'](invalidNote)).toThrow('Note title is required');
     });
 
     it('should throw for empty title', () => {
@@ -190,8 +189,7 @@ describe('BaseConnector', () => {
         body: 'Test body',
       };
 
-      expect(() => connector['validateNote'](invalidNote))
-        .toThrow('Note title is required');
+      expect(() => connector['validateNote'](invalidNote)).toThrow('Note title is required');
     });
 
     it('should throw for missing body', () => {
@@ -199,8 +197,7 @@ describe('BaseConnector', () => {
         title: 'Test Note',
       };
 
-      expect(() => connector['validateNote'](invalidNote))
-        .toThrow('Note body is required');
+      expect(() => connector['validateNote'](invalidNote)).toThrow('Note body is required');
     });
   });
 

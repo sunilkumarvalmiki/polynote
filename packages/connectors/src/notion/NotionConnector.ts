@@ -1,6 +1,6 @@
 import { Client } from '@notionhq/client';
 
-import { Note , generateChecksum } from '@polynote/shared';
+import { Note, generateChecksum } from '@polynote/shared';
 
 import { BaseConnector } from '../base/BaseConnector.js';
 
@@ -40,10 +40,12 @@ export class NotionConnector extends BaseConnector {
     });
 
     // Verify authentication by attempting to list databases
-    await this.rateLimiter(() => this.client!.search({
-      filter: { property: 'object', value: 'database' },
-      page_size: 1,
-    }));
+    await this.rateLimiter(() =>
+      this.client!.search({
+        filter: { property: 'object', value: 'database' },
+        page_size: 1,
+      })
+    );
   }
 
   async authenticate(): Promise<void> {
@@ -84,7 +86,7 @@ export class NotionConnector extends BaseConnector {
 
       hasMore = response.has_more;
       startCursor = response.next_cursor || undefined;
-      
+
       // Update sync cursor for delta sync
       if (!hasMore && startCursor) {
         this.syncCursor = startCursor;
@@ -106,9 +108,7 @@ export class NotionConnector extends BaseConnector {
     }
 
     try {
-      const page = await this.rateLimiter(() =>
-        this.client!.pages.retrieve({ page_id: id })
-      );
+      const page = await this.rateLimiter(() => this.client!.pages.retrieve({ page_id: id }));
       return this.convertPageToNote(page);
     } catch (error) {
       if ((error as any).code === 'object_not_found') {
@@ -124,7 +124,7 @@ export class NotionConnector extends BaseConnector {
     }
 
     const blocks = this.markdownToNotionBlocks(note.body);
-    
+
     const page = await this.rateLimiter(() =>
       this.client!.pages.create({
         parent: { type: 'page_id', page_id: process.env.NOTION_PARENT_PAGE_ID || '' },
@@ -184,9 +184,7 @@ export class NotionConnector extends BaseConnector {
       );
 
       for (const block of blocks.results) {
-        await this.rateLimiter(() =>
-          this.client!.blocks.delete({ block_id: block.id })
-        );
+        await this.rateLimiter(() => this.client!.blocks.delete({ block_id: block.id }));
       }
 
       // Add new blocks
@@ -309,7 +307,7 @@ export class NotionConnector extends BaseConnector {
 
   private richTextToMarkdown(richText: any[]): string {
     return richText
-      .map((text) => {
+      .map(text => {
         let content = text.plain_text || '';
         if (text.annotations?.bold) content = `**${content}**`;
         if (text.annotations?.italic) content = `*${content}*`;
@@ -327,7 +325,7 @@ export class NotionConnector extends BaseConnector {
 
     for (const line of lines) {
       const trimmed = line.trim();
-      
+
       if (!trimmed) {
         continue;
       }
@@ -376,7 +374,7 @@ export class NotionConnector extends BaseConnector {
         const language = trimmed.slice(3).trim();
         const codeLines: string[] = [];
         let i = lines.indexOf(line) + 1;
-        
+
         while (i < lines.length && !lines[i].trim().startsWith('```')) {
           codeLines.push(lines[i]);
           i++;

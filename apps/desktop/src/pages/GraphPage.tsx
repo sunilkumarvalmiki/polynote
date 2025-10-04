@@ -60,11 +60,7 @@ export function GraphPage() {
       },
     };
 
-    networkRef.current = new Network(
-      containerRef.current,
-      { nodes, edges },
-      options
-    );
+    networkRef.current = new Network(containerRef.current, { nodes, edges }, options);
 
     return () => {
       networkRef.current?.destroy();
@@ -79,11 +75,7 @@ export function GraphPage() {
           Visualize connections between your notes
         </p>
       </div>
-      <div
-        ref={containerRef}
-        className="flex-1 bg-background"
-        style={{ height: '100%' }}
-      />
+      <div ref={containerRef} className="flex-1 bg-background" style={{ height: '100%' }} />
     </div>
   );
 }

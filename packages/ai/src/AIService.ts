@@ -70,11 +70,7 @@ export class AIService {
       stream: options?.stream,
     };
 
-    const response = await this.registry.execute(
-      request,
-      onStream,
-      options?.provider
-    );
+    const response = await this.registry.execute(request, onStream, options?.provider);
 
     this.trackTokenUsage(response);
     return response;
@@ -100,11 +96,7 @@ export class AIService {
       stream: options?.stream,
     };
 
-    const response = await this.registry.execute(
-      request,
-      onStream,
-      options?.provider
-    );
+    const response = await this.registry.execute(request, onStream, options?.provider);
 
     this.trackTokenUsage(response);
     return response;
@@ -128,11 +120,7 @@ export class AIService {
       stream: options?.stream,
     };
 
-    const response = await this.registry.execute(
-      request,
-      onStream,
-      options?.provider
-    );
+    const response = await this.registry.execute(request, onStream, options?.provider);
 
     this.trackTokenUsage(response);
     return response;
@@ -159,11 +147,7 @@ export class AIService {
       stream: options?.stream,
     };
 
-    const response = await this.registry.execute(
-      request,
-      onStream,
-      options?.provider
-    );
+    const response = await this.registry.execute(request, onStream, options?.provider);
 
     this.trackTokenUsage(response);
     return response;
@@ -204,9 +188,7 @@ export class AIService {
     const policy = this.registry.getPolicy();
     const perRequestLimit = policy.tokenBudget?.perRequest || 4096;
 
-    return (
-      budget.remaining >= estimatedTokens && estimatedTokens <= perRequestLimit
-    );
+    return budget.remaining >= estimatedTokens && estimatedTokens <= perRequestLimit;
   }
 
   /**
@@ -264,8 +246,6 @@ export class AIService {
    * Get token usage history
    */
   getTokenUsageHistory(): Array<{ date: string; tokens: number }> {
-    return Array.from(this.tokenUsage.values()).sort((a, b) =>
-      a.date.localeCompare(b.date)
-    );
+    return Array.from(this.tokenUsage.values()).sort((a, b) => a.date.localeCompare(b.date));
   }
 }

@@ -1,6 +1,6 @@
 /**
  * ChangeDetector - Detects changes between local and remote notes
- * 
+ *
  * Implements timestamp-based and checksum-based change detection
  * to determine which notes need to be synced.
  */
@@ -29,17 +29,13 @@ export interface ChangeDetectionResult {
 export class ChangeDetector {
   /**
    * Compare local and remote notes to detect changes
-   * 
+   *
    * @param localNotes - Notes from local database
    * @param remoteNotes - Notes from remote connector
    * @param source - Connector source identifier
    * @returns ChangeDetectionResult with categorized changes
    */
-  detectChanges(
-    localNotes: Note[],
-    remoteNotes: Note[],
-    source: string
-  ): ChangeDetectionResult {
+  detectChanges(localNotes: Note[], remoteNotes: Note[], source: string): ChangeDetectionResult {
     const localMap = new Map(localNotes.map(n => [n.id, n]));
     const remoteMap = new Map(remoteNotes.map(n => [n.id, n]));
 
@@ -59,7 +55,7 @@ export class ChangeDetector {
           changeType: 'create',
           source,
           timestamp: new Date(remoteNote.updated_at),
-          checksum: generateChecksum(remoteNote.body)
+          checksum: generateChecksum(remoteNote.body),
         });
       } else {
         // Note exists in both - check if updated
@@ -70,7 +66,7 @@ export class ChangeDetector {
             changeType: 'update',
             source,
             timestamp: new Date(remoteNote.updated_at),
-            checksum: generateChecksum(remoteNote.body)
+            checksum: generateChecksum(remoteNote.body),
           });
         } else {
           unchanged++;
@@ -86,7 +82,7 @@ export class ChangeDetector {
           changeType: 'delete',
           source,
           timestamp: new Date(),
-          checksum: generateChecksum(localNote.body)
+          checksum: generateChecksum(localNote.body),
         });
       }
     }
@@ -96,7 +92,7 @@ export class ChangeDetector {
 
   /**
    * Determine if a note has changed using multiple strategies
-   * 
+   *
    * 1. Timestamp comparison (primary)
    * 2. Checksum comparison (fallback)
    * 3. Content length comparison (quick check)
@@ -137,7 +133,7 @@ export class ChangeDetector {
         changeType: 'create',
         source,
         timestamp: new Date(remoteNote.updated_at),
-        checksum: generateChecksum(remoteNote.body)
+        checksum: generateChecksum(remoteNote.body),
       };
     }
 
@@ -147,7 +143,7 @@ export class ChangeDetector {
         changeType: 'delete',
         source,
         timestamp: new Date(),
-        checksum: generateChecksum(localNote.body)
+        checksum: generateChecksum(localNote.body),
       };
     }
 
@@ -157,7 +153,7 @@ export class ChangeDetector {
         changeType: 'update',
         source,
         timestamp: new Date(remoteNote.updated_at),
-        checksum: generateChecksum(remoteNote.body)
+        checksum: generateChecksum(remoteNote.body),
       };
     }
 
@@ -175,11 +171,12 @@ export class ChangeDetector {
     unchanged: number;
   } {
     return {
-      total: result.created.length + result.updated.length + result.deleted.length + result.unchanged,
+      total:
+        result.created.length + result.updated.length + result.deleted.length + result.unchanged,
       created: result.created.length,
       updated: result.updated.length,
       deleted: result.deleted.length,
-      unchanged: result.unchanged
+      unchanged: result.unchanged,
     };
   }
 }

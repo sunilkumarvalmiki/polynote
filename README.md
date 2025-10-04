@@ -4,7 +4,7 @@
 
 **Universal Note Synchronization Platform**
 
-*Made with ❤️ in India, for knowledge workers everywhere*
+_Made with ❤️ in India, for knowledge workers everywhere_
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen)](https://nodejs.org)
@@ -33,23 +33,27 @@ PolyNote is an **open-source, privacy-first** note synchronization platform buil
 ## ✨ Features
 
 ### 🔄 Bidirectional Sync
+
 - Automatic synchronization across all your note-taking platforms
 - Smart conflict resolution with visual merge tools
 - Preserves formatting, tags, and metadata
 
 ### 🧠 AI-Powered Tools
+
 - **Local-first AI**: Run AI models on your own computer
 - **Summarization**: Get quick summaries of long notes
 - **Translation**: Translate between English, Telugu, and Hindi
 - **Content Enhancement**: Rewrite and improve your notes
 
 ### 🔐 Security & Privacy
+
 - End-to-end encryption for all data
 - Secure sharing with encrypted bundles
 - No cloud storage required (unless you choose)
 - Open-source and auditable
 
 ### 🌈 For Indian Users
+
 - Full support for Indian languages (Telugu, Hindi)
 - RTL text support where needed
 - Localized date and number formats
@@ -191,6 +195,7 @@ We welcome contributions from developers across India and around the world!
 ## 🌍 Supported Platforms
 
 ### Note-Taking Apps
+
 - ✅ **Obsidian** - Full bidirectional sync
 - ✅ **Notion** - Read and write support
 - ✅ **Joplin** - Full sync with attachments
@@ -198,11 +203,13 @@ We welcome contributions from developers across India and around the world!
 - ⏳ **Apple Notes** - Read-only (macOS only)
 
 ### Operating Systems
+
 - ✅ **Linux** - Full support (AppImage, DEB, RPM)
 - ✅ **macOS** - Intel and Apple Silicon (DMG, PKG)
 - ✅ **Windows** - Full support (EXE, NSIS installer)
 
 ### AI Providers
+
 - ✅ **Ollama** - Local AI (recommended)
 - ✅ **GPT4All** - Local AI
 - ✅ **llama.cpp** - Local AI
@@ -277,7 +284,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **🇮🇳 Made with ❤️ in India**
 
-*Empowering knowledge workers, one note at a time*
+_Empowering knowledge workers, one note at a time_
 
 [⬆ Back to Top](#-polynote)
 

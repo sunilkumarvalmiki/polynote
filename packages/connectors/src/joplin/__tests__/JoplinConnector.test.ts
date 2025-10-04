@@ -45,9 +45,7 @@ describe('JoplinConnector', () => {
         enabled: true,
       });
 
-      await expect(invalidConnector.initialize()).rejects.toThrow(
-        'Joplin API token is required'
-      );
+      await expect(invalidConnector.initialize()).rejects.toThrow('Joplin API token is required');
     });
 
     it('should create axios client with correct config', async () => {
@@ -112,9 +110,7 @@ describe('JoplinConnector', () => {
 
   describe('authenticate', () => {
     it('should throw error if client not initialized', async () => {
-      await expect(connector.authenticate()).rejects.toThrow(
-        'Joplin client not initialized'
-      );
+      await expect(connector.authenticate()).rejects.toThrow('Joplin client not initialized');
     });
 
     it('should succeed if client is initialized', async () => {
@@ -160,11 +156,9 @@ describe('JoplinConnector', () => {
         },
       ];
 
-      const mockGet = vi
-        .fn()
-        .mockResolvedValueOnce({
-          data: { items: mockNotes, has_more: false },
-        });
+      const mockGet = vi.fn().mockResolvedValueOnce({
+        data: { items: mockNotes, has_more: false },
+      });
 
       (connector as any).client = { get: mockGet };
 
@@ -337,7 +331,7 @@ describe('JoplinConnector', () => {
         response: { status: 404 },
       });
       (connector as any).client = { get: mockGet };
-      
+
       // Mock retry to bypass retry logic for this test
       vi.spyOn(connector as any, 'retry').mockImplementation((fn: any) => fn());
 
@@ -349,7 +343,7 @@ describe('JoplinConnector', () => {
     it('should throw for other errors', async () => {
       const mockGet = vi.fn().mockRejectedValue(new Error('Server error'));
       (connector as any).client = { get: mockGet };
-      
+
       // Mock retry to bypass retry logic for this test
       vi.spyOn(connector as any, 'retry').mockImplementation((fn: any) => fn());
 
@@ -393,7 +387,7 @@ describe('JoplinConnector', () => {
 
     it('should throw if client not initialized', async () => {
       const uninitializedConnector = new JoplinConnector(mockConfig);
-      
+
       await expect(
         uninitializedConnector.createNote({
           title: 'Test',
@@ -454,13 +448,13 @@ describe('JoplinConnector', () => {
         response: { status: 404 },
       });
       (connector as any).client = { get: mockGet };
-      
+
       // Mock retry to bypass retry logic for this test
       vi.spyOn(connector as any, 'retry').mockImplementation((fn: any) => fn());
 
-      await expect(
-        connector.updateNote('nonexistent', { title: 'New' })
-      ).rejects.toThrow('Note not found');
+      await expect(connector.updateNote('nonexistent', { title: 'New' })).rejects.toThrow(
+        'Note not found'
+      );
     });
   });
 

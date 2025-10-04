@@ -41,10 +41,7 @@ export abstract class BaseProvider implements IProvider {
   /**
    * Execute an AI operation - must be implemented by subclasses
    */
-  abstract execute(
-    request: AIRequest,
-    onStream?: StreamCallback
-  ): Promise<AIResponse>;
+  abstract execute(request: AIRequest, onStream?: StreamCallback): Promise<AIResponse>;
 
   /**
    * Get provider health status
@@ -151,7 +148,7 @@ export abstract class BaseProvider implements IProvider {
 
         if (attempt < maxRetries) {
           const delay = baseDelayMs * Math.pow(2, attempt);
-          await new Promise((resolve) => setTimeout(resolve, delay));
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
     }

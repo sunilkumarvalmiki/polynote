@@ -73,7 +73,7 @@ describe('ConnectorRegistry', () => {
     it('should allow registering multiple different connectors', () => {
       registry.register(connector1);
       registry.register(connector2);
-      
+
       expect(registry.has('connector-1')).toBe(true);
       expect(registry.has('connector-2')).toBe(true);
     });
@@ -83,7 +83,7 @@ describe('ConnectorRegistry', () => {
     it('should unregister a connector', () => {
       registry.register(connector1);
       registry.unregister('connector-1');
-      
+
       expect(registry.has('connector-1')).toBe(false);
     });
 
@@ -96,7 +96,7 @@ describe('ConnectorRegistry', () => {
     it('should retrieve registered connector', () => {
       registry.register(connector1);
       const retrieved = registry.get('connector-1');
-      
+
       expect(retrieved).toBe(connector1);
     });
 
@@ -115,7 +115,7 @@ describe('ConnectorRegistry', () => {
     it('should return all registered connectors', () => {
       registry.register(connector1);
       registry.register(connector2);
-      
+
       const all = registry.getAll();
       expect(all).toHaveLength(2);
       expect(all).toContain(connector1);
@@ -127,10 +127,10 @@ describe('ConnectorRegistry', () => {
     it('should return only enabled connectors', () => {
       connector1.enabled = true;
       connector2.enabled = false;
-      
+
       registry.register(connector1);
       registry.register(connector2);
-      
+
       const enabled = registry.getEnabled();
       expect(enabled).toHaveLength(1);
       expect(enabled[0]).toBe(connector1);
@@ -139,10 +139,10 @@ describe('ConnectorRegistry', () => {
     it('should return empty array when no connectors enabled', () => {
       connector1.enabled = false;
       connector2.enabled = false;
-      
+
       registry.register(connector1);
       registry.register(connector2);
-      
+
       const enabled = registry.getEnabled();
       expect(enabled).toEqual([]);
     });
@@ -163,15 +163,19 @@ describe('ConnectorRegistry', () => {
     it('should initialize all connectors', async () => {
       let init1 = false;
       let init2 = false;
-      
-      connector1.initialize = async () => { init1 = true; };
-      connector2.initialize = async () => { init2 = true; };
-      
+
+      connector1.initialize = async () => {
+        init1 = true;
+      };
+      connector2.initialize = async () => {
+        init2 = true;
+      };
+
       registry.register(connector1);
       registry.register(connector2);
-      
+
       await registry.initializeAll();
-      
+
       expect(init1).toBe(true);
       expect(init2).toBe(true);
     });
@@ -185,18 +189,22 @@ describe('ConnectorRegistry', () => {
     it('should authenticate only enabled connectors', async () => {
       let auth1 = false;
       let auth2 = false;
-      
+
       connector1.enabled = true;
-      connector1.authenticate = async () => { auth1 = true; };
-      
+      connector1.authenticate = async () => {
+        auth1 = true;
+      };
+
       connector2.enabled = false;
-      connector2.authenticate = async () => { auth2 = true; };
-      
+      connector2.authenticate = async () => {
+        auth2 = true;
+      };
+
       registry.register(connector1);
       registry.register(connector2);
-      
+
       await registry.authenticateAll();
-      
+
       expect(auth1).toBe(true);
       expect(auth2).toBe(false);
     });
@@ -204,7 +212,7 @@ describe('ConnectorRegistry', () => {
     it('should not fail if no enabled connectors', async () => {
       connector1.enabled = false;
       registry.register(connector1);
-      
+
       await expect(registry.authenticateAll()).resolves.not.toThrow();
     });
   });

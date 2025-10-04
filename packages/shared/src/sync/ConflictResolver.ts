@@ -1,6 +1,6 @@
 /**
  * ConflictResolver - Three-way merge and conflict detection
- * 
+ *
  * Handles conflicts between note versions from different connectors:
  * - Detects conflicts by comparing checksums and timestamps
  * - Performs automatic three-way merge when possible
@@ -62,7 +62,7 @@ export class ConflictResolver {
       const newer = noteA.updated_at > noteB.updated_at ? noteA : noteB;
       return {
         merged: true,
-        note: newer
+        note: newer,
       };
     }
 
@@ -72,7 +72,7 @@ export class ConflictResolver {
       if (autoMerged) {
         return {
           merged: true,
-          note: autoMerged
+          note: autoMerged,
         };
       }
     }
@@ -84,7 +84,7 @@ export class ConflictResolver {
     return {
       merged: false,
       conflict,
-      conflictFile
+      conflictFile,
     };
   }
 
@@ -106,7 +106,7 @@ export class ConflictResolver {
     const merged: Note = {
       ...base,
       id: noteA.id, // Preserve ID
-      updated_at: Math.max(noteA.updated_at, noteB.updated_at)
+      updated_at: Math.max(noteA.updated_at, noteB.updated_at),
     };
 
     // Apply changes from A
@@ -138,7 +138,7 @@ export class ConflictResolver {
       body: base.body !== modified.body,
       tags: JSON.stringify(base.tags) !== JSON.stringify(modified.tags),
       attachments: JSON.stringify(base.attachments) !== JSON.stringify(modified.attachments),
-      links: JSON.stringify(base.links) !== JSON.stringify(modified.links)
+      links: JSON.stringify(base.links) !== JSON.stringify(modified.links),
     };
   }
 
@@ -164,7 +164,7 @@ export class ConflictResolver {
       connector_b: noteB.source_connector,
       version_a: noteA.checksum,
       version_b: noteB.checksum,
-      created_at: Date.now()
+      created_at: Date.now(),
     };
   }
 
@@ -185,7 +185,9 @@ export class ConflictResolver {
     lines.push('');
     lines.push('# Conflict Resolution Required');
     lines.push('');
-    lines.push('This file was automatically generated because PolyNote detected conflicting changes');
+    lines.push(
+      'This file was automatically generated because PolyNote detected conflicting changes'
+    );
     lines.push(`between ${noteA.source_connector} and ${noteB.source_connector}.`);
     lines.push('');
     lines.push('## Instructions');
@@ -229,8 +231,12 @@ export class ConflictResolver {
     lines.push('');
     lines.push(`| Field | ${noteA.source_connector} | ${noteB.source_connector} |`);
     lines.push('|-------|----------|----------|');
-    lines.push(`| Updated | ${new Date(noteA.updated_at).toISOString()} | ${new Date(noteB.updated_at).toISOString()} |`);
-    lines.push(`| Checksum | ${noteA.checksum.substring(0, 8)}... | ${noteB.checksum.substring(0, 8)}... |`);
+    lines.push(
+      `| Updated | ${new Date(noteA.updated_at).toISOString()} | ${new Date(noteB.updated_at).toISOString()} |`
+    );
+    lines.push(
+      `| Checksum | ${noteA.checksum.substring(0, 8)}... | ${noteB.checksum.substring(0, 8)}... |`
+    );
 
     if (noteA.tags || noteB.tags) {
       const tagsA = (noteA.tags || []).map((t: Tag) => t.name).join(', ');
@@ -251,34 +257,31 @@ export class ConflictResolver {
     noteB: Note
   ): ConflictResolution {
     const chosen = choice === 'a' ? noteA : noteB;
-    
+
     return {
       id: conflict.id,
       resolution: `choose_${choice}`,
       resolvedNote: {
         ...chosen,
-        updated_at: Date.now()
+        updated_at: Date.now(),
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
   /**
    * Resolve a conflict with a manually merged note
    */
-  resolveConflictManually(
-    conflict: Conflict,
-    mergedNote: Note
-  ): ConflictResolution {
+  resolveConflictManually(conflict: Conflict, mergedNote: Note): ConflictResolution {
     return {
       id: conflict.id,
       resolution: 'manual',
       resolvedNote: {
         ...mergedNote,
         updated_at: Date.now(),
-        checksum: generateChecksum(`${mergedNote.title}|${mergedNote.body}|${Date.now()}`)
+        checksum: generateChecksum(`${mergedNote.title}|${mergedNote.body}|${Date.now()}`),
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 }

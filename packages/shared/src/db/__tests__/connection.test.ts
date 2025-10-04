@@ -15,7 +15,6 @@ import {
   searchNotes,
 } from '../connection';
 
-
 const TEST_DB_PATH = join(homedir(), '.polynote', 'notes.db');
 
 describe('Database Connection', () => {
@@ -41,9 +40,9 @@ describe('Database Connection', () => {
 
     it('should create all required tables', () => {
       const db = getDatabase();
-      const tables = db.prepare(
-        "SELECT name FROM sqlite_master WHERE type='table'"
-      ).all() as Array<{ name: string }>;
+      const tables = db
+        .prepare("SELECT name FROM sqlite_master WHERE type='table'")
+        .all() as Array<{ name: string }>;
 
       const expectedTables = [
         'Note',
@@ -178,10 +177,9 @@ describe('Database Connection', () => {
         ['test-4', 'Test 4', 'Body 4', now, now, 'test', 'test-4', 'jkl012']
       );
 
-      const result = queryOne<{ id: string; title: string }>(
-        'SELECT * FROM Note WHERE id = ?',
-        ['test-4']
-      );
+      const result = queryOne<{ id: string; title: string }>('SELECT * FROM Note WHERE id = ?', [
+        'test-4',
+      ]);
       expect(result).toBeDefined();
       expect(result?.id).toBe('test-4');
       expect(result?.title).toBe('Test 4');
@@ -215,13 +213,12 @@ describe('Database Connection', () => {
         ['test-6', 'Test 6', 'Body 6', now, now, 'test', 'test-6', 'pqr678']
       );
 
-      const result = execute(
-        'UPDATE Note SET title = ? WHERE id = ?',
-        ['Updated Title', 'test-6']
-      );
+      const result = execute('UPDATE Note SET title = ? WHERE id = ?', ['Updated Title', 'test-6']);
 
       expect(result.changes).toBe(1);
-      const updated = queryOne<{ title: string }>('SELECT title FROM Note WHERE id = ?', ['test-6']);
+      const updated = queryOne<{ title: string }>('SELECT title FROM Note WHERE id = ?', [
+        'test-6',
+      ]);
       expect(updated?.title).toBe('Updated Title');
     });
 
@@ -249,11 +246,29 @@ describe('Database Connection', () => {
       const now = Date.now();
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['search-1', 'JavaScript Tutorial', 'Learn JavaScript basics', now, now, 'test', 'search-1', 'abc']
+        [
+          'search-1',
+          'JavaScript Tutorial',
+          'Learn JavaScript basics',
+          now,
+          now,
+          'test',
+          'search-1',
+          'abc',
+        ]
       );
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['search-2', 'Python Guide', 'Python programming guide', now, now, 'test', 'search-2', 'def']
+        [
+          'search-2',
+          'Python Guide',
+          'Python programming guide',
+          now,
+          now,
+          'test',
+          'search-2',
+          'def',
+        ]
       );
 
       const results = searchNotes('JavaScript');
@@ -287,7 +302,16 @@ describe('Database Connection', () => {
       );
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['rank-2', 'TypeScript Advanced', 'TypeScript TypeScript TypeScript', now, now, 'test', 'rank-2', 'uvw']
+        [
+          'rank-2',
+          'TypeScript Advanced',
+          'TypeScript TypeScript TypeScript',
+          now,
+          now,
+          'test',
+          'rank-2',
+          'uvw',
+        ]
       );
 
       const results = searchNotes('TypeScript');
@@ -325,7 +349,7 @@ describe('Database Connection', () => {
             'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             ['nested-1', 'Nested Test', 'Body', now, now, 'test', 'nested-1', 'hash1']
           );
-          
+
           // Attempt nested transaction
           const nested = transaction(() => {
             execute(
@@ -334,7 +358,7 @@ describe('Database Connection', () => {
             );
             return 'nested';
           });
-          
+
           return nested;
         });
 
@@ -357,7 +381,10 @@ describe('Database Connection', () => {
           ['null-test', 'Title', 'Body', now, now, 'test', 'null-test', 'hash', null]
         );
 
-        const result = queryOne<{ deleted_at: number | null }>('SELECT deleted_at FROM Note WHERE id = ?', ['null-test']);
+        const result = queryOne<{ deleted_at: number | null }>(
+          'SELECT deleted_at FROM Note WHERE id = ?',
+          ['null-test']
+        );
         expect(result?.deleted_at).toBeNull();
       });
 
@@ -368,19 +395,23 @@ describe('Database Connection', () => {
           ['empty-test', '', '', now, now, 'test', 'empty-test', 'hash']
         );
 
-        const result = queryOne<{ title: string }>('SELECT title FROM Note WHERE id = ?', ['empty-test']);
+        const result = queryOne<{ title: string }>('SELECT title FROM Note WHERE id = ?', [
+          'empty-test',
+        ]);
         expect(result?.title).toBe('');
       });
 
       it('should handle special characters in parameters', () => {
         const now = Date.now();
-        const specialTitle = "Title with 'quotes' and \"double quotes\" and \\ backslashes";
+        const specialTitle = 'Title with \'quotes\' and "double quotes" and \\ backslashes';
         execute(
           'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
           ['special-test', specialTitle, 'Body', now, now, 'test', 'special-test', 'hash']
         );
 
-        const result = queryOne<{ title: string }>('SELECT title FROM Note WHERE id = ?', ['special-test']);
+        const result = queryOne<{ title: string }>('SELECT title FROM Note WHERE id = ?', [
+          'special-test',
+        ]);
         expect(result?.title).toBe(specialTitle);
       });
 
@@ -392,7 +423,9 @@ describe('Database Connection', () => {
           ['long-test', 'Title', longBody, now, now, 'test', 'long-test', 'hash']
         );
 
-        const result = queryOne<{ body: string }>('SELECT body FROM Note WHERE id = ?', ['long-test']);
+        const result = queryOne<{ body: string }>('SELECT body FROM Note WHERE id = ?', [
+          'long-test',
+        ]);
         expect(result?.body).toHaveLength(100000);
       });
 
@@ -404,7 +437,9 @@ describe('Database Connection', () => {
           ['unicode-test', unicodeTitle, 'Body', now, now, 'test', 'unicode-test', 'hash']
         );
 
-        const result = queryOne<{ title: string }>('SELECT title FROM Note WHERE id = ?', ['unicode-test']);
+        const result = queryOne<{ title: string }>('SELECT title FROM Note WHERE id = ?', [
+          'unicode-test',
+        ]);
         expect(result?.title).toBe(unicodeTitle);
       });
     });
@@ -417,7 +452,7 @@ describe('Database Connection', () => {
       it('should handle batch inserts efficiently', () => {
         const now = Date.now();
         const startTime = performance.now();
-        
+
         transaction(() => {
           for (let i = 0; i < 1000; i++) {
             execute(
@@ -426,10 +461,10 @@ describe('Database Connection', () => {
             );
           }
         });
-        
+
         const endTime = performance.now();
         const notes = query('SELECT COUNT(*) as count FROM Note');
-        
+
         expect((notes[0] as { count: number }).count).toBe(1000);
         // Should complete in under 5 seconds
         expect(endTime - startTime).toBeLessThan(5000);
@@ -449,7 +484,7 @@ describe('Database Connection', () => {
         const startTime = performance.now();
         const results = query('SELECT * FROM Note WHERE source_connector = ?', ['test']);
         const endTime = performance.now();
-        
+
         expect(results.length).toBeGreaterThanOrEqual(5000);
         // Query should be fast even on large dataset
         expect(endTime - startTime).toBeLessThan(1000);
@@ -477,7 +512,16 @@ describe('Database Connection', () => {
       const now = Date.now();
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['special-fts', 'React-Native Tutorial', 'Learn React-Native', now, now, 'test', 'special-fts', 'hash']
+        [
+          'special-fts',
+          'React-Native Tutorial',
+          'Learn React-Native',
+          now,
+          now,
+          'test',
+          'special-fts',
+          'hash',
+        ]
       );
 
       const results = searchNotes('React-Native');
@@ -489,7 +533,16 @@ describe('Database Connection', () => {
       const now = Date.now();
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['quote-search', 'The "best" practices', 'Using "quotes" in text', now, now, 'test', 'quote-search', 'hash']
+        [
+          'quote-search',
+          'The "best" practices',
+          'Using "quotes" in text',
+          now,
+          now,
+          'test',
+          'quote-search',
+          'hash',
+        ]
       );
 
       const results = searchNotes('best');
@@ -500,7 +553,16 @@ describe('Database Connection', () => {
       const now = Date.now();
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['paren-search', 'Function(parameters)', 'Using function(args)', now, now, 'test', 'paren-search', 'hash']
+        [
+          'paren-search',
+          'Function(parameters)',
+          'Using function(args)',
+          now,
+          now,
+          'test',
+          'paren-search',
+          'hash',
+        ]
       );
 
       const results = searchNotes('Function');
@@ -512,7 +574,16 @@ describe('Database Connection', () => {
       // Use ASCII-based test since FTS5 default tokenizer may not handle CJK well
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['unicode-search', 'Unicode Test 测试', 'Content with unicode: 你好', now, now, 'test', 'unicode-search', 'hash']
+        [
+          'unicode-search',
+          'Unicode Test 测试',
+          'Content with unicode: 你好',
+          now,
+          now,
+          'test',
+          'unicode-search',
+          'hash',
+        ]
       );
 
       const results = searchNotes('Unicode');
@@ -563,7 +634,16 @@ describe('Database Connection', () => {
       const now = Date.now();
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['case-search', 'JavaScript Tutorial', 'Learn JAVASCRIPT basics', now, now, 'test', 'case-search', 'hash']
+        [
+          'case-search',
+          'JavaScript Tutorial',
+          'Learn JAVASCRIPT basics',
+          now,
+          now,
+          'test',
+          'case-search',
+          'hash',
+        ]
       );
 
       const lowerResults = searchNotes('javascript');
@@ -579,11 +659,29 @@ describe('Database Connection', () => {
       const now = Date.now();
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['title-only', 'Python Tutorial', 'Learn programming basics', now, now, 'test', 'title-only', 'hash1']
+        [
+          'title-only',
+          'Python Tutorial',
+          'Learn programming basics',
+          now,
+          now,
+          'test',
+          'title-only',
+          'hash1',
+        ]
       );
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        ['body-only', 'Programming Guide', 'Learn Python advanced concepts', now, now, 'test', 'body-only', 'hash2']
+        [
+          'body-only',
+          'Programming Guide',
+          'Learn Python advanced concepts',
+          now,
+          now,
+          'test',
+          'body-only',
+          'hash2',
+        ]
       );
 
       const results = searchNotes('Python');
@@ -594,19 +692,19 @@ describe('Database Connection', () => {
   describe('Schema Validation', () => {
     it('should enforce foreign key constraints', () => {
       execute('DELETE FROM Note');
-      
+
       expect(() => {
-        execute(
-          'INSERT INTO NoteTag (note_id, tag_id) VALUES (?, ?)',
-          ['nonexistent-note', 'nonexistent-tag']
-        );
+        execute('INSERT INTO NoteTag (note_id, tag_id) VALUES (?, ?)', [
+          'nonexistent-note',
+          'nonexistent-tag',
+        ]);
       }).toThrow();
     });
 
     it('should enforce unique constraints', () => {
       execute('DELETE FROM Note');
       const now = Date.now();
-      
+
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         ['unique-test', 'Title', 'Body', now, now, 'test', 'unique-test', 'hash']
@@ -615,7 +713,16 @@ describe('Database Connection', () => {
       expect(() => {
         execute(
           'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-          ['unique-test', 'Different Title', 'Different Body', now, now, 'test', 'unique-test-2', 'hash2']
+          [
+            'unique-test',
+            'Different Title',
+            'Different Body',
+            now,
+            now,
+            'test',
+            'unique-test-2',
+            'hash2',
+          ]
         );
       }).toThrow();
     });
@@ -623,20 +730,21 @@ describe('Database Connection', () => {
     it('should cascade deletes for related records', () => {
       execute('DELETE FROM Note');
       execute('DELETE FROM Tag');
-      
+
       const now = Date.now();
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         ['cascade-note', 'Title', 'Body', now, now, 'test', 'cascade-note', 'hash']
       );
-      execute(
-        'INSERT INTO Tag (id, name, created_at) VALUES (?, ?, ?)',
-        ['cascade-tag', 'TestTag', now]
-      );
-      execute(
-        'INSERT INTO NoteTag (note_id, tag_id) VALUES (?, ?)',
-        ['cascade-note', 'cascade-tag']
-      );
+      execute('INSERT INTO Tag (id, name, created_at) VALUES (?, ?, ?)', [
+        'cascade-tag',
+        'TestTag',
+        now,
+      ]);
+      execute('INSERT INTO NoteTag (note_id, tag_id) VALUES (?, ?)', [
+        'cascade-note',
+        'cascade-tag',
+      ]);
 
       execute('DELETE FROM Note WHERE id = ?', ['cascade-note']);
 
@@ -667,14 +775,17 @@ describe('Database Connection', () => {
     it('should handle type mismatches in parameters', () => {
       execute('DELETE FROM Note');
       const now = Date.now();
-      
+
       // Should handle string where number expected
       execute(
         'INSERT INTO Note (id, title, body, created_at, updated_at, source_connector, source_id, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         ['type-test', 'Title', 'Body', 'not-a-number', now, 'test', 'type-test', 'hash']
       );
 
-      const result = queryOne<{ created_at: number | string }>('SELECT created_at FROM Note WHERE id = ?', ['type-test']);
+      const result = queryOne<{ created_at: number | string }>(
+        'SELECT created_at FROM Note WHERE id = ?',
+        ['type-test']
+      );
       expect(result?.created_at).toBe('not-a-number');
     });
 
@@ -687,7 +798,7 @@ describe('Database Connection', () => {
     it('should handle prepared statement reuse', () => {
       execute('DELETE FROM Note');
       const now = Date.now();
-      
+
       // Execute same query multiple times
       for (let i = 0; i < 5; i++) {
         execute(
@@ -696,7 +807,9 @@ describe('Database Connection', () => {
         );
       }
 
-      const results = query('SELECT COUNT(*) as count FROM Note WHERE source_connector = ?', ['test']);
+      const results = query('SELECT COUNT(*) as count FROM Note WHERE source_connector = ?', [
+        'test',
+      ]);
       expect((results[0] as { count: number }).count).toBeGreaterThanOrEqual(5);
     });
   });

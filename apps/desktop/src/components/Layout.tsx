@@ -1,18 +1,9 @@
-import clsx from 'clsx';
-import {
-  FileText,
-  Network,
-  Settings,
-  RefreshCw,
-  Home,
-  GitBranch,
-  Download,
-} from 'lucide-react';
+import { clsx } from 'clsx';
+import { FileText, Network, Settings, RefreshCw, Home, GitBranch, Download } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { SyncStatus } from './SyncStatus';
-
 
 interface LayoutProps {
   children: ReactNode;
@@ -39,16 +30,25 @@ export function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     // Load theme from settings
-    window.electronAPI?.getSettings().then((settings) => {
-      document.documentElement.classList.toggle('dark', settings.theme === 'dark');
-    });
+    if (window.electronAPI) {
+      window.electronAPI
+        .getSettings()
+        .then((settings) => {
+          document.documentElement.classList.toggle('dark', settings.theme === 'dark');
+        })
+        .catch((err: unknown) => {
+          console.error('Failed to load settings:', err);
+        });
+    }
   }, []);
 
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      await window.electronAPI?.startSync();
-    } catch (error) {
+      if (window.electronAPI) {
+        await window.electronAPI.startSync();
+      }
+    } catch (error: unknown) {
       console.error('Sync failed:', error);
     } finally {
       setTimeout(() => setIsSyncing(false), 3000);
@@ -69,8 +69,9 @@ export function Layout({ children }: LayoutProps) {
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path ||
+          {navItems.map(item => {
+            const isActive =
+              location.pathname === item.path ||
               (item.path !== '/' && location.pathname.startsWith(item.path));
 
             return (
@@ -112,9 +113,7 @@ export function Layout({ children }: LayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
-        {children}
-      </main>
+      <main className="flex-1 overflow-hidden">{children}</main>
     </div>
   );
 }

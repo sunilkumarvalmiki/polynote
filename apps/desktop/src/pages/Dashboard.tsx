@@ -24,9 +24,7 @@ function StatCard({ title, value, icon, trend, link }: StatCardProps) {
             </p>
           )}
         </div>
-        <div className="p-3 bg-primary/10 rounded-lg text-primary">
-          {icon}
-        </div>
+        <div className="p-3 bg-primary/10 rounded-lg text-primary">{icon}</div>
       </div>
     </div>
   );
@@ -91,10 +89,7 @@ export function Dashboard() {
         <div className="bg-card border border-border rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Recent Notes</h2>
-            <Link
-              to="/notes"
-              className="text-sm text-primary hover:text-primary/80"
-            >
+            <Link to="/notes" className="text-sm text-primary hover:text-primary/80">
               View all
             </Link>
           </div>
@@ -118,9 +113,7 @@ export function Dashboard() {
                   className="block p-4 rounded-lg hover:bg-muted transition-colors"
                 >
                   <h3 className="font-medium">{note.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                    {note.body}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{note.body}</p>
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                     <span>{new Date(note.updatedAt).toLocaleDateString()}</span>
                     {note.tags && note.tags.length > 0 && (

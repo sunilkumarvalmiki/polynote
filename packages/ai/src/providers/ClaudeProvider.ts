@@ -4,13 +4,7 @@
  */
 
 import { getPromptForOperation } from '../prompts';
-import {
-  ProviderLocation,
-  ProviderConfig,
-  AIRequest,
-  AIResponse,
-  StreamCallback,
-} from '../types';
+import { ProviderLocation, ProviderConfig, AIRequest, AIResponse, StreamCallback } from '../types';
 
 import { BaseProvider } from './BaseProvider';
 
@@ -127,9 +121,7 @@ export class ClaudeProvider extends BaseProvider {
         return await this.executeNonStreaming(claudeRequest);
       }
     } catch (error) {
-      return this.createErrorResponse(
-        error instanceof Error ? error : new Error(String(error))
-      );
+      return this.createErrorResponse(error instanceof Error ? error : new Error(String(error)));
     }
   }
 
@@ -158,7 +150,7 @@ export class ClaudeProvider extends BaseProvider {
     });
 
     const data = result as ClaudeResponse;
-    const textContent = data.content.find((c) => c.type === 'text');
+    const textContent = data.content.find(c => c.type === 'text');
 
     return {
       content: textContent?.text || '',

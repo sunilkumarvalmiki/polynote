@@ -1,6 +1,6 @@
 /**
  * NoteMapper - Maps between connector-specific formats and internal Note format
- * 
+ *
  * Handles bidirectional transformation of notes between external connectors
  * (Obsidian, Notion, Joplin, etc.) and the internal PolyNote format.
  */
@@ -61,7 +61,7 @@ export class NoteMapper {
    */
   importNote(externalNote: ExternalNote, connector: string, sourceId: string): Note {
     const config = this.configs.get(connector);
-    
+
     // Apply pre-import transformation if configured
     let transformed = externalNote;
     if (config?.transformations?.beforeImport) {
@@ -69,16 +69,18 @@ export class NoteMapper {
     }
 
     // Convert timestamps to milliseconds
-    const createdAt = typeof transformed.createdAt === 'number' 
-      ? transformed.createdAt 
-      : transformed.createdAt.getTime();
-    const updatedAt = typeof transformed.updatedAt === 'number'
-      ? transformed.updatedAt
-      : transformed.updatedAt.getTime();
-    const deletedAt = transformed.deletedAt 
-      ? (typeof transformed.deletedAt === 'number' 
-          ? transformed.deletedAt 
-          : transformed.deletedAt.getTime())
+    const createdAt =
+      typeof transformed.createdAt === 'number'
+        ? transformed.createdAt
+        : transformed.createdAt.getTime();
+    const updatedAt =
+      typeof transformed.updatedAt === 'number'
+        ? transformed.updatedAt
+        : transformed.updatedAt.getTime();
+    const deletedAt = transformed.deletedAt
+      ? typeof transformed.deletedAt === 'number'
+        ? transformed.deletedAt
+        : transformed.deletedAt.getTime()
       : undefined;
 
     // Create internal note
@@ -92,7 +94,7 @@ export class NoteMapper {
       source_connector: connector,
       source_id: sourceId,
       checksum: generateChecksum(transformed.body || ''),
-      tags: this.normalizeTags(transformed.tags)
+      tags: this.normalizeTags(transformed.tags),
     };
 
     // Apply post-import transformation if configured
@@ -123,7 +125,7 @@ export class NoteMapper {
       createdAt: transformed.created_at,
       updatedAt: transformed.updated_at,
       deletedAt: transformed.deleted_at,
-      tags: transformed.tags?.map(t => t.name)
+      tags: transformed.tags?.map(t => t.name),
     };
 
     // Apply post-export transformation if configured
@@ -138,7 +140,7 @@ export class NoteMapper {
    * Batch import multiple external notes
    */
   importNotes(externalNotes: ExternalNote[], connector: string): Note[] {
-    return externalNotes.map(en => 
+    return externalNotes.map(en =>
       this.importNote(en, connector, this.generateSourceId(en, connector))
     );
   }
@@ -161,7 +163,7 @@ export class NoteMapper {
     return tags.map(tag => ({
       id: this.generateTagId(tag),
       name: this.normalizeTagName(tag),
-      created_at: Date.now()
+      created_at: Date.now(),
     }));
   }
 
@@ -190,7 +192,10 @@ export class NoteMapper {
   /**
    * Merge two notes with conflict detection
    */
-  mergeNotes(local: Note, remote: Note): {
+  mergeNotes(
+    local: Note,
+    remote: Note
+  ): {
     merged: Note;
     hasConflict: boolean;
     conflicts: string[];
@@ -224,7 +229,7 @@ export class NoteMapper {
       checksum: generateChecksum(useRemote ? remote.body : local.body),
       tags: this.mergeTags(local.tags, remote.tags),
       attachments: local.attachments || remote.attachments,
-      links: local.links || remote.links
+      links: local.links || remote.links,
     };
 
     return { merged, hasConflict, conflicts };
@@ -257,7 +262,10 @@ export class NoteMapper {
   /**
    * Calculate field-level differences between two notes
    */
-  diffNotes(a: Note, b: Note): {
+  diffNotes(
+    a: Note,
+    b: Note
+  ): {
     title: boolean;
     body: boolean;
     tags: boolean;
@@ -267,7 +275,7 @@ export class NoteMapper {
       title: a.title !== b.title,
       body: a.body !== b.body,
       tags: JSON.stringify(a.tags) !== JSON.stringify(b.tags),
-      metadata: a.checksum !== b.checksum
+      metadata: a.checksum !== b.checksum,
     };
   }
 
@@ -298,8 +306,8 @@ export const defaultMappings: MappingConfig[] = [
       body: 'body',
       createdAt: 'created_at',
       updatedAt: 'updated_at',
-      tags: 'tags'
-    }
+      tags: 'tags',
+    },
   },
   {
     connector: 'notion',
@@ -309,14 +317,14 @@ export const defaultMappings: MappingConfig[] = [
       body: 'content',
       createdAt: 'created_time',
       updatedAt: 'last_edited_time',
-      tags: 'tags'
+      tags: 'tags',
     },
     transformations: {
-      beforeImport: (note) => {
+      beforeImport: note => {
         // Notion uses ISO timestamps, convert to milliseconds
         return note;
-      }
-    }
+      },
+    },
   },
   {
     connector: 'joplin',
@@ -326,9 +334,9 @@ export const defaultMappings: MappingConfig[] = [
       body: 'body',
       createdAt: 'user_created_time',
       updatedAt: 'user_updated_time',
-      tags: 'tags'
-    }
-  }
+      tags: 'tags',
+    },
+  },
 ];
 
 /**

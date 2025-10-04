@@ -1,6 +1,6 @@
 /**
  * SyncQueue - Priority-based work queue for sync operations
- * 
+ *
  * Manages sync tasks with priorities, concurrency limits, retry logic,
  * and progress tracking for bidirectional note synchronization.
  */
@@ -51,12 +51,12 @@ export class SyncQueue {
   private retrying: Set<string> = new Set(); // Track tasks being retried
   private completed: SyncTask[] = [];
   private failed: SyncTask[] = [];
-  
+
   private config: SyncQueueConfig = {
     maxConcurrent: 5,
     maxRetries: 3,
     retryDelay: 1000,
-    retryBackoff: 2
+    retryBackoff: 2,
   };
 
   private taskIdCounter = 0;
@@ -86,24 +86,22 @@ export class SyncQueue {
       status: 'pending',
       retryCount: 0,
       maxRetries: this.config.maxRetries,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
 
     this.queue.push(task);
     this.sortQueue();
-    
+
     return task.id;
   }
 
   /**
    * Process the queue with concurrency control
    */
-  async run(
-    executor: (task: SyncTask) => Promise<void>
-  ): Promise<SyncProgress> {
+  async run(executor: (task: SyncTask) => Promise<void>): Promise<SyncProgress> {
     // Track tasks that were present at run() start to prevent infinite loops from concurrent enqueues
     const initialTaskIds = new Set(this.queue.map(t => t.id));
-    
+
     const runLoop = async () => {
       // Track if we should continue processing - stops when all initial tasks are done
       const shouldContinue = () => {
@@ -115,7 +113,7 @@ export class SyncQueue {
         const hasPendingInitialTasks = this.queue.some(t => initialTaskIds.has(t.id));
         return hasPendingInitialTasks;
       };
-      
+
       while (shouldContinue()) {
         // Wait if at max concurrency
         while (this.running.size >= this.config.maxConcurrent && this.hasWork()) {
@@ -130,22 +128,22 @@ export class SyncQueue {
             break;
           }
         }
-        
+
         if (!task) {
           // No initial tasks left, but might have running/retrying tasks
           await this.sleep(10);
           continue;
         }
-        
+
         // Execute task asynchronously (don't await to allow concurrent execution)
         this.executeTask(task, executor).catch(error => {
           console.error(`Task ${task.id} failed:`, error);
         });
-        
+
         // Small delay to allow status changes to propagate and listeners to capture them
         await this.sleep(10);
       }
-      
+
       // Wait for all running tasks to complete
       while (this.running.size > 0) {
         await this.sleep(10);
@@ -167,41 +165,40 @@ export class SyncQueue {
     task.startedAt = Date.now();
     this.running.set(task.id, task);
     this.notifyListeners(task);
-    
+
     // Small delay to ensure listeners can process the 'running' status
     await this.sleep(1);
 
     try {
       await executor(task);
-      
+
       // Success
       task.status = 'completed';
       task.completedAt = Date.now();
       this.completed.push(task);
       this.running.delete(task.id);
       this.notifyListeners(task);
-      
     } catch (error) {
       // Failure - retry if possible
       task.retryCount++;
-      
+
       if (task.retryCount < task.maxRetries) {
         task.status = 'retrying';
         task.error = error instanceof Error ? error.message : String(error);
         this.running.delete(task.id);
         this.retrying.add(task.id); // Mark as retrying
         this.notifyListeners(task);
-        
+
         // Calculate exponential backoff delay
-        const delay = this.config.retryDelay * Math.pow(this.config.retryBackoff, task.retryCount - 1);
+        const delay =
+          this.config.retryDelay * Math.pow(this.config.retryBackoff, task.retryCount - 1);
         await this.sleep(delay);
-        
+
         // Re-queue with same priority
         task.status = 'pending';
         this.queue.push(task);
         this.sortQueue();
         this.retrying.delete(task.id); // No longer retrying
-        
       } else {
         // Max retries exceeded
         task.status = 'failed';
@@ -219,7 +216,7 @@ export class SyncQueue {
    */
   private sortQueue(): void {
     const priorityOrder = { high: 0, normal: 1, low: 2 };
-    
+
     this.queue.sort((a, b) => {
       const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
       if (priorityDiff !== 0) {
@@ -247,7 +244,7 @@ export class SyncQueue {
       running: this.running.size,
       completed: this.completed.length,
       failed: this.failed.length,
-      retrying: this.queue.filter(t => t.retryCount > 0).length
+      retrying: this.queue.filter(t => t.retryCount > 0).length,
     };
   }
 
@@ -255,10 +252,12 @@ export class SyncQueue {
    * Get task by ID
    */
   getTask(id: string): SyncTask | undefined {
-    return this.queue.find(t => t.id === id) ||
-           this.running.get(id) ||
-           this.completed.find(t => t.id === id) ||
-           this.failed.find(t => t.id === id);
+    return (
+      this.queue.find(t => t.id === id) ||
+      this.running.get(id) ||
+      this.completed.find(t => t.id === id) ||
+      this.failed.find(t => t.id === id)
+    );
   }
 
   /**
@@ -289,7 +288,7 @@ export class SyncQueue {
       ...this.queue.filter(t => t.connector === connector),
       ...Array.from(this.running.values()).filter(t => t.connector === connector),
       ...this.completed.filter(t => t.connector === connector),
-      ...this.failed.filter(t => t.connector === connector)
+      ...this.failed.filter(t => t.connector === connector),
     ];
   }
 
@@ -315,17 +314,17 @@ export class SyncQueue {
    */
   retryFailed(): number {
     const count = this.failed.length;
-    
+
     this.failed.forEach(task => {
       task.status = 'pending';
       task.retryCount = 0;
       task.error = undefined;
       this.queue.push(task);
     });
-    
+
     this.failed = [];
     this.sortQueue();
-    
+
     return count;
   }
 
@@ -376,39 +375,38 @@ export class SyncQueue {
     byConnector: Record<string, number>;
   } {
     const allTasks = [...this.completed, ...this.failed];
-    
+
     const completionTimes = this.completed
       .filter(t => t.startedAt && t.completedAt)
       .map(t => t.completedAt! - t.startedAt!);
-    
-    const averageCompletionTime = completionTimes.length > 0
-      ? completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length
-      : 0;
-    
-    const successRate = allTasks.length > 0
-      ? this.completed.length / allTasks.length
-      : 0;
-    
+
+    const averageCompletionTime =
+      completionTimes.length > 0
+        ? completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length
+        : 0;
+
+    const successRate = allTasks.length > 0 ? this.completed.length / allTasks.length : 0;
+
     const byOperation: Record<SyncOperation, number> = {
       create: 0,
       update: 0,
       delete: 0,
-      conflict: 0
+      conflict: 0,
     };
-    
+
     const byConnector: Record<string, number> = {};
-    
+
     allTasks.forEach(task => {
       byOperation[task.operation]++;
       byConnector[task.connector] = (byConnector[task.connector] || 0) + 1;
     });
-    
+
     return {
       averageCompletionTime,
       successRate,
       totalProcessed: allTasks.length,
       byOperation,
-      byConnector
+      byConnector,
     };
   }
 }

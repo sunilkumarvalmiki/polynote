@@ -63,7 +63,7 @@ const translation = await aiService.translate('Hello world', {
 console.log(translation.content);
 
 // Rewrite
-const rewritten = await aiService.rewrite('Hey, what\'s up?', {
+const rewritten = await aiService.rewrite("Hey, what's up?", {
   style: RewriteStyle.FORMAL,
 });
 console.log(rewritten.content);
@@ -72,14 +72,10 @@ console.log(rewritten.content);
 ## Streaming Example
 
 ```typescript
-const response = await aiService.summarize(
-  'Long document...',
-  { stream: true },
-  (chunk) => {
-    // Stream callback - called for each chunk
-    process.stdout.write(chunk);
-  }
-);
+const response = await aiService.summarize('Long document...', { stream: true }, chunk => {
+  // Stream callback - called for each chunk
+  process.stdout.write(chunk);
+});
 ```
 
 ## Token Budget
@@ -97,6 +93,7 @@ const fits = aiService.isWithinBudget(1000);
 ## Secret Redaction
 
 All prompts automatically redact:
+
 - API keys
 - AWS keys
 - GitHub tokens

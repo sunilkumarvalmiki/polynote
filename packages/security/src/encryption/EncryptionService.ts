@@ -156,11 +156,7 @@ export class EncryptionService implements IEncryptionService {
       const metadataLength = Buffer.alloc(4);
       metadataLength.writeUInt32BE(metadataBuffer.length, 0);
 
-      const output = Buffer.concat([
-        metadataLength,
-        metadataBuffer,
-        encrypted.ciphertext,
-      ]);
+      const output = Buffer.concat([metadataLength, metadataBuffer, encrypted.ciphertext]);
 
       // Write back to file with .encrypted extension
       await fs.writeFile(`${filePath}.encrypted`, output);
@@ -272,11 +268,7 @@ export class EncryptionService implements IEncryptionService {
       const key = await this.getKey(attachmentId, KeyPurpose.ATTACHMENT_ENCRYPTION);
 
       const nonce = await sodium.randombytes_buf(24);
-      const ciphertext = await sodium.crypto_secretbox(
-        data,
-        nonce,
-        new CryptographyKey(key)
-      );
+      const ciphertext = await sodium.crypto_secretbox(data, nonce, new CryptographyKey(key));
 
       const metadata: EncryptionMetadata = {
         algorithm: 'chacha20-poly1305',

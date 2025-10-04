@@ -79,9 +79,7 @@ describe('KeyManagementService', () => {
 
     it('should throw error when not initialized', async () => {
       const uninitializedKms = new KeyManagementService();
-      await expect(
-        uninitializedKms.deriveKey(KeyPurpose.NOTE_ENCRYPTION)
-      ).rejects.toThrow();
+      await expect(uninitializedKms.deriveKey(KeyPurpose.NOTE_ENCRYPTION)).rejects.toThrow();
     });
   });
 
@@ -109,7 +107,8 @@ describe('KeyManagementService', () => {
       const newKms = new KeyManagementService();
 
       // Use a valid phrase format
-      const phrase = 'abandon ability able about above absent absorb abstract absurd abuse access accident';
+      const phrase =
+        'abandon ability able about above absent absorb abstract absurd abuse access accident';
 
       await newKms.recoverFromPhrase(phrase);
       expect(newKms.isInitialized()).toBe(true);
@@ -117,9 +116,9 @@ describe('KeyManagementService', () => {
 
     it('should throw error for invalid recovery phrase (wrong word count)', async () => {
       const newKms = new KeyManagementService();
-      await expect(
-        newKms.recoverFromPhrase('only five words here now')
-      ).rejects.toThrow('must be 12 words');
+      await expect(newKms.recoverFromPhrase('only five words here now')).rejects.toThrow(
+        'must be 12 words'
+      );
     });
 
     it('should throw error for invalid recovery phrase (invalid word)', async () => {
@@ -154,9 +153,7 @@ describe('KeyManagementService', () => {
       const exported = await kms.exportMasterKey('correct-password');
 
       const newKms = new KeyManagementService();
-      await expect(
-        newKms.importMasterKey(exported, 'wrong-password')
-      ).rejects.toThrow();
+      await expect(newKms.importMasterKey(exported, 'wrong-password')).rejects.toThrow();
     });
 
     it('should derive same keys after export/import', async () => {
@@ -206,9 +203,7 @@ describe('KeyManagementService', () => {
       await kms.initialize({ passphrase: 'test-passphrase' });
       kms.clear();
 
-      await expect(
-        kms.deriveKey(KeyPurpose.NOTE_ENCRYPTION)
-      ).rejects.toThrow();
+      await expect(kms.deriveKey(KeyPurpose.NOTE_ENCRYPTION)).rejects.toThrow();
     });
   });
 

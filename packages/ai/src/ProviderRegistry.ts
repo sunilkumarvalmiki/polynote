@@ -81,18 +81,14 @@ export class ProviderRegistry {
    * Get local providers
    */
   getLocalProviders(): IProvider[] {
-    return this.getAllProviders().filter(
-      (p) => p.location === ProviderLocation.LOCAL
-    );
+    return this.getAllProviders().filter(p => p.location === ProviderLocation.LOCAL);
   }
 
   /**
    * Get cloud providers
    */
   getCloudProviders(): IProvider[] {
-    return this.getAllProviders().filter(
-      (p) => p.location === ProviderLocation.CLOUD
-    );
+    return this.getAllProviders().filter(p => p.location === ProviderLocation.CLOUD);
   }
 
   /**
@@ -103,8 +99,8 @@ export class ProviderRegistry {
       return;
     }
 
-    const initPromises = this.getAllProviders().map((provider) =>
-      provider.initialize().catch((error) => {
+    const initPromises = this.getAllProviders().map(provider =>
+      provider.initialize().catch(error => {
         console.warn(`Failed to initialize provider ${provider.name}:`, error);
       })
     );
@@ -129,10 +125,7 @@ export class ProviderRegistry {
         try {
           return await this.executeWithProvider(provider, request, onStream);
         } catch (error) {
-          console.warn(
-            `Preferred provider ${preferredProvider} failed:`,
-            error
-          );
+          console.warn(`Preferred provider ${preferredProvider} failed:`, error);
           // Fall through to policy-based selection
         }
       }
@@ -164,10 +157,7 @@ export class ProviderRegistry {
         console.warn(`Provider ${provider.name} failed:`, lastError.message);
 
         // If cloud fallback is disabled and this was a local provider, stop
-        if (
-          !this.policy.cloudFallback &&
-          provider.location === ProviderLocation.LOCAL
-        ) {
+        if (!this.policy.cloudFallback && provider.location === ProviderLocation.LOCAL) {
           break;
         }
 
@@ -188,10 +178,7 @@ export class ProviderRegistry {
     onStream?: StreamCallback
   ): Promise<AIResponse> {
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(
-        () => reject(new Error('Request timeout')),
-        this.policy.timeoutMs
-      );
+      setTimeout(() => reject(new Error('Request timeout')), this.policy.timeoutMs);
     });
 
     const executePromise = provider.execute(request, onStream);
@@ -203,9 +190,7 @@ export class ProviderRegistry {
    * Get health status of all providers
    */
   async getHealthStatus(): Promise<ProviderHealth[]> {
-    const healthPromises = this.getAllProviders().map((provider) =>
-      provider.getHealth()
-    );
+    const healthPromises = this.getAllProviders().map(provider => provider.getHealth());
 
     return await Promise.all(healthPromises);
   }
@@ -244,8 +229,8 @@ export class ProviderRegistry {
    * Shutdown all providers
    */
   async shutdown(): Promise<void> {
-    const shutdownPromises = this.getAllProviders().map((provider) =>
-      provider.shutdown().catch((error) => {
+    const shutdownPromises = this.getAllProviders().map(provider =>
+      provider.shutdown().catch(error => {
         console.warn(`Failed to shutdown provider ${provider.name}:`, error);
       })
     );

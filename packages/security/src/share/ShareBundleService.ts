@@ -122,10 +122,7 @@ export class ShareBundleService implements IShareBundleService {
       await this.ensureSodium();
 
       if (bundle.length <= 32) {
-        throw new SecurityError(
-          'Share bundle is corrupted',
-          SecurityErrorCode.INVALID_BUNDLE
-        );
+        throw new SecurityError('Share bundle is corrupted', SecurityErrorCode.INVALID_BUNDLE);
       }
 
       const payload = bundle.subarray(0, bundle.length - 32);
@@ -133,10 +130,7 @@ export class ShareBundleService implements IShareBundleService {
       const expectedChecksum = createHash('sha256').update(payload).digest();
 
       if (!checksum.equals(expectedChecksum)) {
-        throw new SecurityError(
-          'Share bundle checksum mismatch',
-          SecurityErrorCode.INVALID_BUNDLE
-        );
+        throw new SecurityError('Share bundle checksum mismatch', SecurityErrorCode.INVALID_BUNDLE);
       }
 
       // Decrypt using OpenPGP
@@ -155,10 +149,7 @@ export class ShareBundleService implements IShareBundleService {
 
       // Verify expiration
       if (bundleData.metadata.expiresAt && bundleData.metadata.expiresAt < Date.now()) {
-        throw new SecurityError(
-          'Share bundle has expired',
-          SecurityErrorCode.BUNDLE_EXPIRED
-        );
+        throw new SecurityError('Share bundle has expired', SecurityErrorCode.BUNDLE_EXPIRED);
       }
 
       return {
@@ -276,14 +267,16 @@ export class ShareBundleService implements IShareBundleService {
 
       // Derive key from password
       const salt = ensureBuffer(await sodium.randombytes_buf(16)); // Argon2 requires 16 bytes
-      const key = ensureBuffer(await sodium.crypto_pwhash(
-        32,
-        config.password,
-        salt,
-        2, // opsLimit (minimum)
-        64 * 1024 * 1024, // memLimit (64 MB)
-        sodium.CRYPTO_PWHASH_ALG_ARGON2ID13
-      ));
+      const key = ensureBuffer(
+        await sodium.crypto_pwhash(
+          32,
+          config.password,
+          salt,
+          2, // opsLimit (minimum)
+          64 * 1024 * 1024, // memLimit (64 MB)
+          sodium.CRYPTO_PWHASH_ALG_ARGON2ID13
+        )
+      );
 
       // Encrypt
       const nonce = ensureBuffer(await sodium.randombytes_buf(24));
@@ -300,13 +293,7 @@ export class ShareBundleService implements IShareBundleService {
       metadataLength.writeUInt32BE(metadataBuffer.length, 0);
 
       // Bundle format: [metadata_length][metadata][salt][nonce][ciphertext]
-      return Buffer.concat([
-        metadataLength,
-        metadataBuffer,
-        salt,
-        nonce,
-        ciphertext,
-      ]);
+      return Buffer.concat([metadataLength, metadataBuffer, salt, nonce, ciphertext]);
     } catch (error) {
       throw new SecurityError(
         'Failed to create bundle with libsodium',
@@ -349,21 +336,20 @@ export class ShareBundleService implements IShareBundleService {
 
       // Verify expiration
       if (metadata.expiresAt && metadata.expiresAt < Date.now()) {
-        throw new SecurityError(
-          'Share bundle has expired',
-          SecurityErrorCode.BUNDLE_EXPIRED
-        );
+        throw new SecurityError('Share bundle has expired', SecurityErrorCode.BUNDLE_EXPIRED);
       }
 
       // Derive key from password
-      const key = ensureBuffer(await sodium.crypto_pwhash(
-        32,
-        password,
-        salt,
-        2,
-        64 * 1024 * 1024,
-        sodium.CRYPTO_PWHASH_ALG_ARGON2ID13
-      ));
+      const key = ensureBuffer(
+        await sodium.crypto_pwhash(
+          32,
+          password,
+          salt,
+          2,
+          64 * 1024 * 1024,
+          sodium.CRYPTO_PWHASH_ALG_ARGON2ID13
+        )
+      );
 
       // Decrypt
       const plaintext = await sodium.crypto_secretbox_open(

@@ -5,7 +5,7 @@ import { watch, FSWatcher } from 'chokidar';
 import matter from 'gray-matter';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Note , generateChecksum } from '@polynote/shared';
+import { Note, generateChecksum } from '@polynote/shared';
 
 import { BaseConnector } from '../base/BaseConnector.js';
 
@@ -41,9 +41,9 @@ export class ObsidianConnector extends BaseConnector {
       },
     });
 
-    this.watcher.on('add', (path) => this.handleFileChange(path));
-    this.watcher.on('change', (path) => this.handleFileChange(path));
-    this.watcher.on('unlink', (path) => this.handleFileDelete(path));
+    this.watcher.on('add', path => this.handleFileChange(path));
+    this.watcher.on('change', path => this.handleFileChange(path));
+    this.watcher.on('unlink', path => this.handleFileDelete(path));
   }
 
   async authenticate(): Promise<void> {
@@ -160,7 +160,7 @@ export class ObsidianConnector extends BaseConnector {
     };
 
     const content = matter.stringify(note.body, frontmatter);
-    
+
     const dir = join(this.config.vaultPath);
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });

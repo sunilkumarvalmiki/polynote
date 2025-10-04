@@ -5,12 +5,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 import { ProviderRegistry } from '../ProviderRegistry';
-import {
-  ProviderType,
-  ProviderLocation,
-  OperationType,
-  Language,
-} from '../types';
+import { ProviderType, ProviderLocation, OperationType, Language } from '../types';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -207,9 +202,7 @@ describe('ProviderRegistry', () => {
     });
 
     it('should handle unregistering non-existent provider', async () => {
-      await expect(
-        registry.unregisterProvider('non-existent')
-      ).resolves.not.toThrow();
+      await expect(registry.unregisterProvider('non-existent')).resolves.not.toThrow();
     });
   });
 

@@ -20,7 +20,7 @@ export function SyncStatus() {
     loadStatus();
 
     // Listen for sync progress updates
-    const unsubscribe = window.electronAPI?.onSyncProgress?.((progress) => {
+    const unsubscribe = window.electronAPI?.onSyncProgress?.(progress => {
       console.log('Sync progress:', progress);
       loadStatus();
     });
@@ -38,11 +38,7 @@ export function SyncStatus() {
   };
 
   if (!status) {
-    return (
-      <div className="text-xs text-muted-foreground">
-        Loading sync status...
-      </div>
-    );
+    return <div className="text-xs text-muted-foreground">Loading sync status...</div>;
   }
 
   const formatLastSync = (dateString: string) => {
@@ -69,22 +65,24 @@ export function SyncStatus() {
 
       {/* Connectors */}
       <div className="space-y-1">
-        {status.connectors.filter(c => c.enabled).map((connector) => (
-          <div
-            key={connector.id}
-            className={clsx(
-              'flex items-center gap-2 text-xs px-2 py-1.5 rounded',
-              connector.status === 'syncing' && 'bg-primary/10 text-primary',
-              connector.status === 'error' && 'bg-destructive/10 text-destructive',
-              connector.status === 'idle' && 'bg-muted/50 text-muted-foreground'
-            )}
-          >
-            {connector.status === 'syncing' && <Clock size={12} className="animate-spin" />}
-            {connector.status === 'error' && <AlertCircle size={12} />}
-            {connector.status === 'idle' && <CheckCircle size={12} />}
-            <span>{connector.name}</span>
-          </div>
-        ))}
+        {status.connectors
+          .filter(c => c.enabled)
+          .map(connector => (
+            <div
+              key={connector.id}
+              className={clsx(
+                'flex items-center gap-2 text-xs px-2 py-1.5 rounded',
+                connector.status === 'syncing' && 'bg-primary/10 text-primary',
+                connector.status === 'error' && 'bg-destructive/10 text-destructive',
+                connector.status === 'idle' && 'bg-muted/50 text-muted-foreground'
+              )}
+            >
+              {connector.status === 'syncing' && <Clock size={12} className="animate-spin" />}
+              {connector.status === 'error' && <AlertCircle size={12} />}
+              {connector.status === 'idle' && <CheckCircle size={12} />}
+              <span>{connector.name}</span>
+            </div>
+          ))}
       </div>
     </div>
   );

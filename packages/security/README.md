@@ -65,16 +65,10 @@ await encryption.encryptFile('/path/to/file.txt', 'key-id');
 await encryption.decryptFile('/path/to/file.txt.encrypted', 'key-id');
 
 // Encrypt attachment
-const encryptedAttachment = await encryption.encryptAttachment(
-  'attachment-456',
-  fileBuffer
-);
+const encryptedAttachment = await encryption.encryptAttachment('attachment-456', fileBuffer);
 
 // Decrypt attachment
-const fileData = await encryption.decryptAttachment(
-  'attachment-456',
-  encryptedAttachment
-);
+const fileData = await encryption.decryptAttachment('attachment-456', encryptedAttachment);
 ```
 
 ### Access Control
@@ -119,10 +113,7 @@ const bundle = await share.createBundle({
 await fs.writeFile('share.polynote', bundle);
 
 // Extract bundle
-const { notes, attachments, metadata } = await share.extractBundle(
-  bundle,
-  'share-password'
-);
+const { notes, attachments, metadata } = await share.extractBundle(bundle, 'share-password');
 
 // Verify bundle integrity
 const isValid = await share.verifyBundle(bundle);

@@ -224,7 +224,10 @@ export interface IShareBundleService {
   createBundle(config: ShareBundleConfig): Promise<Buffer>;
 
   /** Extract share bundle */
-  extractBundle(bundle: Buffer, password: string): Promise<{
+  extractBundle(
+    bundle: Buffer,
+    password: string
+  ): Promise<{
     notes: Array<{ id: string; title: string; content: string; tags: string[] }>;
     attachments?: Array<{ id: string; noteId: string; data: Buffer; filename: string }>;
     metadata: ShareBundleMetadata;

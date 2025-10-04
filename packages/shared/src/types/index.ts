@@ -111,13 +111,13 @@ export interface ShareBundle {
 export interface IConnector {
   name: string;
   enabled: boolean;
-  
+
   initialize(): Promise<void>;
   authenticate(): Promise<void>;
-  
+
   pullChanges(since?: Date): Promise<Note[]>;
   pushChanges(notes: Note[]): Promise<void>;
-  
+
   getNote(id: string): Promise<Note | null>;
   createNote(note: Omit<Note, 'id'>): Promise<Note>;
   updateNote(id: string, note: Partial<Note>): Promise<Note>;

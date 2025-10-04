@@ -55,7 +55,9 @@ MIIEpAIBAAKCAQEA1234567890
     const text = 'JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.abc123';
     const redacted = redactSecrets(text);
     expect(redacted).toContain('[REDACTED]');
-    expect(redacted).not.toContain('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.abc123');
+    expect(redacted).not.toContain(
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.abc123'
+    );
   });
 
   it('should redact passwords', () => {

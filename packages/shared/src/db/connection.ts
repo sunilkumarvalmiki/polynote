@@ -18,10 +18,10 @@ function ensureDatabase(): Database.Database {
   if (!db) {
     // Ensure .polynote directory exists
     mkdirSync(DB_DIR, { recursive: true });
-    
+
     // Create database connection
     db = new Database(DB_PATH);
-    
+
     // Enable WAL mode for better concurrency
     db.pragma('journal_mode = WAL');
     db.pragma('foreign_keys = ON');
@@ -34,11 +34,11 @@ function ensureDatabase(): Database.Database {
 export function initializeDatabase(): void {
   const database = ensureDatabase();
   const schemaPath = join(__dirname, 'schema.sql');
-  
+
   if (!existsSync(schemaPath)) {
     throw new Error(`Schema file not found at ${schemaPath}`);
   }
-  
+
   const schema = readFileSync(schemaPath, 'utf-8');
   database.exec(schema);
 }
@@ -67,13 +67,13 @@ export function transaction<T>(fn: () => T): T {
 export function query<T = unknown>(sql: string, params?: unknown[]): T[] {
   const database = ensureDatabase();
   const stmt = database.prepare(sql);
-  return params ? stmt.all(...params) as T[] : stmt.all() as T[];
+  return params ? (stmt.all(...params) as T[]) : (stmt.all() as T[]);
 }
 
 export function queryOne<T = unknown>(sql: string, params?: unknown[]): T | undefined {
   const database = ensureDatabase();
   const stmt = database.prepare(sql);
-  return params ? stmt.get(...params) as T : stmt.get() as T;
+  return params ? (stmt.get(...params) as T) : (stmt.get() as T);
 }
 
 export function execute(sql: string, params?: unknown[]): Database.RunResult {
@@ -83,7 +83,10 @@ export function execute(sql: string, params?: unknown[]): Database.RunResult {
 }
 
 // Full-text search helper
-export function searchNotes(searchTerm: string, limit = 50): Array<{
+export function searchNotes(
+  searchTerm: string,
+  limit = 50
+): Array<{
   id: string;
   title: string;
   body: string;
@@ -91,7 +94,7 @@ export function searchNotes(searchTerm: string, limit = 50): Array<{
 }> {
   // Wrap search term in quotes to handle special characters and treat as phrase
   const quotedTerm = `"${searchTerm.replace(/"/g, '""')}"`;
-  
+
   return query<{ id: string; title: string; body: string; rank: number }>(
     `
     SELECT
