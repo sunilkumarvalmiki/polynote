@@ -215,13 +215,6 @@ export class SyncQueue {
   }
 
   /**
-   * Get next task from queue (highest priority)
-   */
-  private _dequeue(): SyncTask | undefined {
-    return this.queue.shift();
-  }
-
-  /**
    * Sort queue by priority (high > normal > low)
    */
   private sortQueue(): void {
