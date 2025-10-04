@@ -1,11 +1,13 @@
-import { Note } from '@polynote/shared';
-import { BaseConnector } from '../base/BaseConnector.js';
-import { watch, FSWatcher } from 'chokidar';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, basename, extname } from 'node:path';
+
+import { watch, FSWatcher } from 'chokidar';
 import matter from 'gray-matter';
-import { generateChecksum } from '@polynote/shared';
 import { v4 as uuidv4 } from 'uuid';
+
+import { Note , generateChecksum } from '@polynote/shared';
+
+import { BaseConnector } from '../base/BaseConnector.js';
 
 interface ObsidianConfig {
   vaultPath: string;

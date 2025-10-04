@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { NoteList } from '../components/NoteList';
+
 import { NoteEditor } from '../components/NoteEditor';
+import { NoteList } from '../components/NoteList';
 import { SearchBar } from '../components/SearchBar';
 
 export function NotesPage() {

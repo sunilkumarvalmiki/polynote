@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
+import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface SyncStatusData {
   isRunning: boolean;

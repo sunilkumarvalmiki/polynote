@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ConflictResolver } from '../ConflictResolver.js';
+
 import type { Note } from '../../types/index.js';
 import { generateChecksum } from '../../utils/checksum.js';
+import { ConflictResolver } from '../ConflictResolver.js';
 
 describe('ConflictResolver', () => {
   let resolver: ConflictResolver;

@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
+
 import { AccessControlService } from '../access/AccessControlService';
 import { PermissionLevel } from '../types';
 

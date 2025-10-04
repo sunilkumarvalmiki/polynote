@@ -2,10 +2,12 @@
  * Tests for Encryption Service
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import { promises as fs } from 'fs';
-import { KeyManagementService } from '../kms/KeyManagementService';
+
+import { describe, it, expect, beforeEach } from 'vitest';
+
 import { EncryptionService } from '../encryption/EncryptionService';
+import { KeyManagementService } from '../kms/KeyManagementService';
 import { KeyPurpose } from '../types';
 
 describe('EncryptionService', () => {

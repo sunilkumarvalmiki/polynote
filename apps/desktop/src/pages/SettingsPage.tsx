@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
 import { Moon, Sun, Globe } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface Settings {
   theme: 'light' | 'dark';

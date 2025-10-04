@@ -3,6 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
+
+import { OperationType, Language, RewriteStyle } from '../../types';
 import {
   redactSecrets,
   getSummarizePrompt,
@@ -11,7 +13,6 @@ import {
   getChatPrompt,
   getPromptForOperation,
 } from '../index';
-import { OperationType, Language, RewriteStyle } from '../../types';
 
 describe('Secret Redaction', () => {
   it('should redact API keys', () => {

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ChangeDetector } from '../ChangeDetector.js';
+
 import type { Note } from '../../types/index.js';
+import { ChangeDetector } from '../ChangeDetector.js';
 
 describe('ChangeDetector', () => {
   let detector: ChangeDetector;

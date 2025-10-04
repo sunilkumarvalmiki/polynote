@@ -1,6 +1,8 @@
-import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+
+import { app, BrowserWindow } from 'electron';
+
 import { registerIpcHandlers } from './ipc-handlers';
 
 // Security: Disable GPU acceleration for better compatibility

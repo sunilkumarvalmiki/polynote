@@ -9,9 +9,9 @@ export * from './encryption/EncryptionService';
 export * from './access/AccessControlService';
 export * from './share/ShareBundleService';
 
-import { KeyManagementService } from './kms/KeyManagementService';
-import { EncryptionService } from './encryption/EncryptionService';
 import { AccessControlService } from './access/AccessControlService';
+import { EncryptionService } from './encryption/EncryptionService';
+import { KeyManagementService } from './kms/KeyManagementService';
 import { ShareBundleService } from './share/ShareBundleService';
 import { SecurityConfig } from './types';
 

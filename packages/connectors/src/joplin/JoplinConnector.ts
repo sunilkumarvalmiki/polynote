@@ -1,7 +1,8 @@
-import { Note } from '@polynote/shared';
-import { BaseConnector } from '../base/BaseConnector.js';
 import axios, { AxiosInstance } from 'axios';
-import { generateChecksum } from '@polynote/shared';
+
+import { Note , generateChecksum } from '@polynote/shared';
+
+import { BaseConnector } from '../base/BaseConnector.js';
 
 interface JoplinConfig {
   apiToken: string;

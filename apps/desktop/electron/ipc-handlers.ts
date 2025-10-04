@@ -1,4 +1,5 @@
 import { ipcMain, shell, app } from 'electron';
+
 import { mainWindow } from './main';
 
 /**
@@ -11,10 +12,39 @@ import { mainWindow } from './main';
  * 4. External URLs are validated before opening
  */
 
+// Type definitions for mock data
+interface Note {
+  id: string;
+  title: string;
+  body: string;
+  tags?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Rule {
+  id: string;
+  createdAt: string;
+  [key: string]: unknown;
+}
+
+interface Settings {
+  theme: string;
+  language: string;
+  syncInterval: number;
+  aiProvider: string;
+  [key: string]: unknown;
+}
+
+interface NoteFilter {
+  search?: string;
+  tags?: string[];
+}
+
 // Mock data storage (replace with actual backend calls)
-const mockNotes: any[] = [];
-const mockRules: any[] = [];
-let mockSettings: any = {
+const mockNotes: Note[] = [];
+const mockRules: Rule[] = [];
+let mockSettings: Settings = {
   theme: 'dark',
   language: 'en',
   syncInterval: 300,
@@ -26,7 +56,7 @@ export function registerIpcHandlers(): void {
   // Notes API
   // ============================================================================
 
-  ipcMain.handle('notes:get-all', async (_, filter?: { search?: string; tags?: string[] }) => {
+  ipcMain.handle('notes:get-all', (_, filter?: NoteFilter) => {
     try {
       // TODO: Replace with actual backend call
       let notes = [...mockNotes];
@@ -51,7 +81,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('notes:get-one', async (_, noteId: string) => {
+  ipcMain.handle('notes:get-one', (_, noteId: string) => {
     try {
       // TODO: Replace with actual backend call
       const note = mockNotes.find(n => n.id === noteId);
@@ -65,7 +95,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('notes:create', async (_, note: any) => {
+  ipcMain.handle('notes:create', (_, note: Partial<Note>) => {
     try {
       // TODO: Replace with actual backend call
       const newNote = {
@@ -82,7 +112,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('notes:update', async (_, noteId: string, updates: any) => {
+  ipcMain.handle('notes:update', (_, noteId: string, updates: Partial<Note>) => {
     try {
       // TODO: Replace with actual backend call
       const index = mockNotes.findIndex(n => n.id === noteId);
@@ -101,7 +131,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('notes:delete', async (_, noteId: string) => {
+  ipcMain.handle('notes:delete', (_, noteId: string) => {
     try {
       // TODO: Replace with actual backend call
       const index = mockNotes.findIndex(n => n.id === noteId);
@@ -119,7 +149,7 @@ export function registerIpcHandlers(): void {
   // Search API
   // ============================================================================
 
-  ipcMain.handle('search:notes', async (_, query: string, _options?: any) => {
+  ipcMain.handle('search:notes', (_, query: string) => {
     try {
       // TODO: Replace with actual FTS5 search
       const results = mockNotes.filter(note =>
@@ -137,7 +167,7 @@ export function registerIpcHandlers(): void {
   // Sync API
   // ============================================================================
 
-  ipcMain.handle('sync:get-status', async () => {
+  ipcMain.handle('sync:get-status', () => {
     try {
       // TODO: Replace with actual sync status
       return {
@@ -154,7 +184,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('sync:start', async (_, connectorId?: string) => {
+  ipcMain.handle('sync:start', (_, connectorId?: string) => {
     try {
       // TODO: Replace with actual sync start
       console.log('Starting sync for:', connectorId || 'all connectors');
@@ -176,7 +206,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('sync:pause', async () => {
+  ipcMain.handle('sync:pause', () => {
     try {
       // TODO: Replace with actual sync pause
       console.log('Pausing sync');
@@ -190,7 +220,7 @@ export function registerIpcHandlers(): void {
   // AI API
   // ============================================================================
 
-  ipcMain.handle('ai:summarize', async (_, _noteId: string, _options?: any) => {
+  ipcMain.handle('ai:summarize', (_, _noteId: string) => {
     try {
       // TODO: Replace with actual AI summarization
       return 'This is a mock summary of the note.';
@@ -200,7 +230,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('ai:translate', async (_, _noteId: string, _targetLang: string) => {
+  ipcMain.handle('ai:translate', (_, _noteId: string, _targetLang: string) => {
     try {
       // TODO: Replace with actual AI translation
       return 'This is a mock translation.';
@@ -210,7 +240,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('ai:rewrite', async (_, _noteId: string, _style: string) => {
+  ipcMain.handle('ai:rewrite', (_, _noteId: string, _style: string) => {
     try {
       // TODO: Replace with actual AI rewrite
       return 'This is a mock rewrite.';
@@ -224,7 +254,7 @@ export function registerIpcHandlers(): void {
   // Graph API
   // ============================================================================
 
-  ipcMain.handle('graph:get', async (_, _options?: any) => {
+  ipcMain.handle('graph:get', () => {
     try {
       // TODO: Replace with actual graph data
       return {
@@ -245,7 +275,7 @@ export function registerIpcHandlers(): void {
   // Rules API
   // ============================================================================
 
-  ipcMain.handle('rules:get-all', async () => {
+  ipcMain.handle('rules:get-all', () => {
     try {
       // TODO: Replace with actual backend call
       return mockRules;
@@ -255,7 +285,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('rules:create', async (_, rule: any) => {
+  ipcMain.handle('rules:create', (_, rule: Partial<Rule>) => {
     try {
       // TODO: Replace with actual backend call
       const newRule = {
@@ -271,7 +301,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('rules:update', async (_, ruleId: string, updates: any) => {
+  ipcMain.handle('rules:update', (_, ruleId: string, updates: Partial<Rule>) => {
     try {
       // TODO: Replace with actual backend call
       const index = mockRules.findIndex(r => r.id === ruleId);
@@ -286,7 +316,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('rules:delete', async (_, ruleId: string) => {
+  ipcMain.handle('rules:delete', (_, ruleId: string) => {
     try {
       // TODO: Replace with actual backend call
       const index = mockRules.findIndex(r => r.id === ruleId);
@@ -304,7 +334,7 @@ export function registerIpcHandlers(): void {
   // Settings API
   // ============================================================================
 
-  ipcMain.handle('settings:get', async () => {
+  ipcMain.handle('settings:get', () => {
     try {
       // TODO: Replace with actual backend call
       return mockSettings;
@@ -314,7 +344,7 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('settings:update', async (_, updates: any) => {
+  ipcMain.handle('settings:update', (_, updates: Partial<Settings>) => {
     try {
       // TODO: Replace with actual backend call
       mockSettings = { ...mockSettings, ...updates };
@@ -346,15 +376,15 @@ export function registerIpcHandlers(): void {
     }
   });
 
-  ipcMain.handle('system:get-version', async () => {
+  ipcMain.handle('system:get-version', () => {
     return app.getVersion();
   });
 
-  ipcMain.handle('system:get-path', async (_, name: string) => {
+  ipcMain.handle('system:get-path', (_, name: string) => {
     const allowedPaths = ['home', 'appData', 'userData', 'temp', 'downloads', 'documents'];
     if (!allowedPaths.includes(name)) {
       throw new Error(`Invalid path name: ${name}`);
     }
-    return app.getPath(name as any);
+    return app.getPath(name as 'home' | 'appData' | 'userData' | 'temp' | 'downloads' | 'documents');
   });
 }

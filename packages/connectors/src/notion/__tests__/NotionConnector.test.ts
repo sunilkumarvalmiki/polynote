@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { NotionConnector } from '../NotionConnector.js';
 import { Client } from '@notionhq/client';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import type { Note } from '@polynote/shared';
+
+import { NotionConnector } from '../NotionConnector.js';
 
 vi.mock('@notionhq/client');
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { SyncQueue, type SyncTask } from '../SyncQueue.js';
+
 import type { Note } from '../../types/index.js';
+import { SyncQueue, type SyncTask } from '../SyncQueue.js';
 
 describe('SyncQueue', () => {
   let queue: SyncQueue;

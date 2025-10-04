@@ -3,6 +3,7 @@
  * Cloud AI provider using OpenAI API
  */
 
+import { getPromptForOperation } from '../prompts';
 import {
   ProviderLocation,
   ProviderConfig,
@@ -10,8 +11,8 @@ import {
   AIResponse,
   StreamCallback,
 } from '../types';
+
 import { BaseProvider } from './BaseProvider';
-import { getPromptForOperation } from '../prompts';
 
 interface OpenAIMessage {
   role: 'system' | 'user' | 'assistant';

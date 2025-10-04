@@ -1,5 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import clsx from 'clsx';
 import {
   FileText,
   Network,
@@ -8,8 +7,11 @@ import {
   Home,
   GitBranch,
 } from 'lucide-react';
+import { ReactNode, useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+
 import { SyncStatus } from './SyncStatus';
-import clsx from 'clsx';
+
 
 interface LayoutProps {
   children: ReactNode;

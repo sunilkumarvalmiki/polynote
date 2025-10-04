@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { AIService } from '../AIService';
 import { ProviderRegistry } from '../ProviderRegistry';
 import { ProviderType, Language, RewriteStyle } from '../types';

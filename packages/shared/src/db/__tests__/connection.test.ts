@@ -1,4 +1,9 @@
+import { unlinkSync, existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+
 import {
   initializeDatabase,
   getDatabase,
@@ -9,9 +14,7 @@ import {
   execute,
   searchNotes,
 } from '../connection';
-import { unlinkSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
-import { homedir } from 'node:os';
+
 
 const TEST_DB_PATH = join(homedir(), '.polynote', 'notes.db');
 

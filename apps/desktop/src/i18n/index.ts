@@ -1,6 +1,6 @@
 import en from './locales/en.json';
-import te from './locales/te.json';
 import hi from './locales/hi.json';
+import te from './locales/te.json';
 
 export type Language = 'en' | 'te' | 'hi';
 

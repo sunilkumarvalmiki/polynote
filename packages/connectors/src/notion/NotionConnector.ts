@@ -1,7 +1,8 @@
-import { Note } from '@polynote/shared';
-import { BaseConnector } from '../base/BaseConnector.js';
 import { Client } from '@notionhq/client';
-import { generateChecksum } from '@polynote/shared';
+
+import { Note , generateChecksum } from '@polynote/shared';
+
+import { BaseConnector } from '../base/BaseConnector.js';
 
 interface NotionConfig {
   apiKey: string;

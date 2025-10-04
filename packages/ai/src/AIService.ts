@@ -3,6 +3,7 @@
  * High-level service for AI operations (summarize, translate, rewrite)
  */
 
+import { ProviderRegistry } from './ProviderRegistry';
 import {
   OperationType,
   Language,
@@ -12,7 +13,6 @@ import {
   StreamCallback,
   TokenBudget,
 } from './types';
-import { ProviderRegistry } from './ProviderRegistry';
 
 export interface SummarizeOptions {
   /** Preferred provider name */

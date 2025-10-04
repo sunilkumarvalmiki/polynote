@@ -1,9 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ObsidianConnector } from '../ObsidianConnector.js';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+
 import { watch } from 'chokidar';
 import matter from 'gray-matter';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import type { Note } from '@polynote/shared';
+
+import { ObsidianConnector } from '../ObsidianConnector.js';
 
 vi.mock('node:fs');
 vi.mock('chokidar');

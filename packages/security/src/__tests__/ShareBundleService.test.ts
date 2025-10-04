@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
+
 import { ShareBundleService } from '../share/ShareBundleService';
 
 describe('ShareBundleService', () => {

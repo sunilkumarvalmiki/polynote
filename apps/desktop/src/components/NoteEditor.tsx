@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import clsx from 'clsx';
+import { Save, Eye, EyeOff, Sparkles, Languages, RefreshCw, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import remarkFrontmatter from 'remark-frontmatter';
-import { Save, Eye, EyeOff, Sparkles, Languages, RefreshCw, Trash2 } from 'lucide-react';
-import clsx from 'clsx';
+import remarkGfm from 'remark-gfm';
 
 interface NoteEditorProps {
   noteId: string;

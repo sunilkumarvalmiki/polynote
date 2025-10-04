@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { NoteMapper, createNoteMapper, defaultMappings, type ExternalNote } from '../NoteMapper.js';
+
 import type { Note } from '../../types/index.js';
+import { NoteMapper, createNoteMapper, defaultMappings, type ExternalNote } from '../NoteMapper.js';
 
 describe('NoteMapper', () => {
   let mapper: NoteMapper;

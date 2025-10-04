@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useRef } from 'react';
 import clsx from 'clsx';
 import { FileText } from 'lucide-react';
+import { useRef } from 'react';
 
 interface NoteListProps {
   searchQuery: string;

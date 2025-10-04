@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BaseConnector } from '../base/BaseConnector';
+
 import { Note, SyncResult } from '@polynote/shared';
+
+import { BaseConnector } from '../base/BaseConnector';
 
 // Mock implementation of BaseConnector for testing
 class TestConnector extends BaseConnector {
@@ -150,7 +152,7 @@ describe('BaseConnector', () => {
 
       // Check that requests are spaced at least 100ms apart (1000ms / 10 req/s)
       for (let i = 1; i < timestamps.length; i++) {
-        const gap = timestamps[i]! - timestamps[i - 1]!;
+        const gap = timestamps[i] - timestamps[i - 1];
         expect(gap).toBeGreaterThanOrEqual(90); // 10ms tolerance
       }
     });

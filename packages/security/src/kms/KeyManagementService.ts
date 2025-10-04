@@ -4,6 +4,7 @@
  */
 
 import { SodiumPlus, CryptographyKey } from 'sodium-plus';
+
 import {
   IKeyManagementService,
   MasterKeyConfig,
@@ -98,7 +99,7 @@ export class KeyManagementService implements IKeyManagementService {
       // Derive subkey using crypto_kdf (Libsodium's KDF)
       // We use a simple approach: BLAKE2b with master key as key and info as message
       const subkey = await this.sodium.crypto_generichash(
-        Buffer.concat([await this.masterKey.getBuffer() as Buffer, infoBuffer]),
+        Buffer.concat([await this.masterKey.getBuffer(), infoBuffer]),
         this.masterKey,
         this.KEY_LENGTH
       );

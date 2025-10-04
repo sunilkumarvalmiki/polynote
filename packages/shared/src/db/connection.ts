@@ -1,8 +1,9 @@
-import Database from 'better-sqlite3';
 import { readFileSync, mkdirSync, existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
+import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import Database from 'better-sqlite3';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

@@ -3,8 +3,10 @@
  * Handles file and content encryption using ChaCha20-Poly1305
  */
 
-import { SodiumPlus, CryptographyKey } from 'sodium-plus';
 import { promises as fs } from 'fs';
+
+import { SodiumPlus, CryptographyKey } from 'sodium-plus';
+
 import {
   IEncryptionService,
   IKeyManagementService,

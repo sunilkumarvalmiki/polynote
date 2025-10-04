@@ -19,5 +19,13 @@
     "composite": true,
     "incremental": true
   },
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.config.js",
+    "**/*.setup.js",
+    "**/coverage/**",
+    "**/__mocks__/**"
+  ]
 }

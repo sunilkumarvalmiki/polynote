@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
-import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
+import { Network } from 'vis-network';
 import 'vis-network/styles/vis-network.css';
 
 export function GraphPage() {

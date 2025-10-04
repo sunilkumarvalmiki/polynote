@@ -3,6 +3,9 @@
  * Manages AI providers with local-first policy and cloud fallback
  */
 
+import { ClaudeProvider } from './providers/ClaudeProvider';
+import { OllamaProvider } from './providers/OllamaProvider';
+import { OpenAIProvider } from './providers/OpenAIProvider';
 import {
   IProvider,
   ProviderType,
@@ -14,9 +17,6 @@ import {
   StreamCallback,
   ProviderHealth,
 } from './types';
-import { OllamaProvider } from './providers/OllamaProvider';
-import { OpenAIProvider } from './providers/OpenAIProvider';
-import { ClaudeProvider } from './providers/ClaudeProvider';
 
 export class ProviderRegistry {
   private providers: Map<string, IProvider> = new Map();

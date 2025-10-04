@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import clsx from 'clsx';
 import { Plus, Trash2, Edit } from 'lucide-react';
 import { useState } from 'react';
-import clsx from 'clsx';
 
 interface Rule {
   id: string;

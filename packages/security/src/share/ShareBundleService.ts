@@ -3,8 +3,9 @@
  * Creates encrypted, shareable bundles of notes using password-based encryption
  */
 
-import { SodiumPlus, CryptographyKey } from 'sodium-plus';
 import * as openpgp from 'openpgp';
+import { SodiumPlus, CryptographyKey } from 'sodium-plus';
+
 import {
   IShareBundleService,
   ShareBundleConfig,

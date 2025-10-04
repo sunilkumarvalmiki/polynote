@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+
+import { Note } from '@polynote/shared';
+
 import { ConnectorRegistry } from '../ConnectorRegistry';
 import { BaseConnector } from '../base/BaseConnector';
-import { Note } from '@polynote/shared';
 
 class MockConnector extends BaseConnector {
   name = 'mock-connector';
