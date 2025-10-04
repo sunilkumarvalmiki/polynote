@@ -227,21 +227,22 @@ export class NotionConnector extends BaseConnector {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async convertPageToNote(page: any): Promise<Note | null> {
     if (!this.client) return null;
 
     try {
       const title = this.extractTitle(page);
       const blocks = await this.rateLimiter(() =>
-        this.client!.blocks.children.list({ block_id: page.id })
+        this.client!.blocks.children.list({ block_id: page.id as string })
       );
 
-      const body = this.notionBlocksToMarkdown(blocks.results as any[]);
-      const createdTime = new Date(page.created_time).getTime();
-      const updatedTime = new Date(page.last_edited_time).getTime();
+      const body = this.notionBlocksToMarkdown(blocks.results as NotionBlock[]);
+      const createdTime = new Date(page.created_time as string).getTime();
+      const updatedTime = new Date(page.last_edited_time as string).getTime();
 
       return {
-        id: page.id,
+        id: page.id as string,
         title,
         body,
         created_at: createdTime,
