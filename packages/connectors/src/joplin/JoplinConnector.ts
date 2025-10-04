@@ -159,7 +159,7 @@ export class JoplinConnector extends BaseConnector {
       created_at: Date.now(),
       updated_at: Date.now(),
       source_connector: this.name,
-      source_id: response.data.id,
+      source_id: (response.data as JoplinCreateResponse).id,
       checksum: generateChecksum(note.body),
       tags: note.tags,
     };
@@ -177,7 +177,12 @@ export class JoplinConnector extends BaseConnector {
       throw new Error(`Note not found: ${id}`);
     }
 
-    const joplinUpdate: any = {};
+    interface JoplinUpdateRequest {
+      title?: string;
+      body?: string;
+    }
+
+    const joplinUpdate: JoplinUpdateRequest = {};
     if (updates.title) joplinUpdate.title = updates.title;
     if (updates.body) joplinUpdate.body = updates.body;
 

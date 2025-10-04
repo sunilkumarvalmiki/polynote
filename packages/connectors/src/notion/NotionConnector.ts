@@ -12,6 +12,7 @@ interface NotionConfig {
 interface NotionBlock {
   id: string;
   type: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -54,6 +55,7 @@ export class NotionConnector extends BaseConnector {
     if (!this.client) {
       throw new Error('Notion client not initialized');
     }
+    await Promise.resolve();
   }
 
   async pullChanges(since?: Date): Promise<Note[]> {
@@ -111,7 +113,10 @@ export class NotionConnector extends BaseConnector {
       const page = await this.rateLimiter(() => this.client!.pages.retrieve({ page_id: id }));
       return this.convertPageToNote(page);
     } catch (error) {
-      if ((error as any).code === 'object_not_found') {
+      interface NotionError {
+        code?: string;
+      }
+      if ((error as NotionError).code === 'object_not_found') {
         return null;
       }
       throw error;
@@ -189,9 +194,11 @@ export class NotionConnector extends BaseConnector {
 
       // Add new blocks
       const newBlocks = this.markdownToNotionBlocks(updates.body);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       await this.rateLimiter(() =>
         this.client!.blocks.children.append({
           block_id: id,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           children: newBlocks,
         })
       );
