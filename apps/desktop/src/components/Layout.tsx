@@ -30,8 +30,9 @@ export function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     // Load theme from settings
-    if (window.electronAPI) {
-      window.electronAPI
+    const api = window.electronAPI;
+    if (api) {
+      void api
         .getSettings()
         .then((settings) => {
           document.documentElement.classList.toggle('dark', settings.theme === 'dark');
@@ -45,8 +46,9 @@ export function Layout({ children }: LayoutProps) {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      if (window.electronAPI) {
-        await window.electronAPI.startSync();
+      const api = window.electronAPI;
+      if (api) {
+        await api.startSync();
       }
     } catch (error: unknown) {
       console.error('Sync failed:', error);
