@@ -63,7 +63,14 @@
     },
     "import/internal-regex": "^@polynote/"
   },
-  "ignorePatterns": ["dist", "node_modules", "*.config.js"],
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "*.config.js",
+    "*.config.ts",
+    "**/__tests__/**",
+    "**/electron/**"
+  ],
   "overrides": [
     {
       "files": ["packages/connectors/**/*.ts"],
