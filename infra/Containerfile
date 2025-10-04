@@ -1,27 +1,41 @@
 # PolyNote Development Container
 FROM node:22-alpine
 
-# Install development tools
+# Install development tools and pnpm
 RUN apk add --no-cache \
     git \
     sqlite \
     python3 \
     make \
     g++ \
-    bash
+    bash && \
+    corepack enable && \
+    corepack prepare pnpm@latest --activate
 
 # Set working directory
 WORKDIR /workspace
 
-# Copy package files
-COPY package*.json ./
+# Copy pnpm configuration and lockfile
+COPY .npmrc pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+
+# Copy all workspace package.json files
+COPY packages/ai/package.json ./packages/ai/
+COPY packages/connectors/package.json ./packages/connectors/
+COPY packages/security/package.json ./packages/security/
 COPY packages/shared/package.json ./packages/shared/
+COPY apps/desktop/package.json ./apps/desktop/
 
 # Install dependencies
-RUN npm install
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build packages
+RUN pnpm build
 
 # Expose ports
 EXPOSE 3000 3001
 
 # Default command
-CMD ["npm", "run", "dev"]
+CMD ["pnpm", "dev"]
