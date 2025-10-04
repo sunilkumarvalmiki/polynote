@@ -1,0 +1,144 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '9'
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node-version: [22]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebuild native modules
+        run: npm rebuild better-sqlite3 --build-from-source
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Run tests
+        run: npm test
+        env:
+          CI: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          files: ./packages/*/coverage/coverage-final.json
+          flags: unittests
+          name: codecov-${{ matrix.os }}
+          fail_ci_if_error: false
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+  build:
+    name: Build Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebuild native modules
+        run: npm rebuild better-sqlite3 --build-from-source
+
+      - name: Build all packages
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            apps/*/dist
+            packages/*/dist
+          retention-days: 7
+
+  podman-test:
+    name: Podman Container Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman
+
+      - name: Test with Podman
+        run: |
+          podman run --rm -v $PWD:/repo:Z -w /repo node:22-alpine sh -c "
+            apk add --no-cache python3 make g++ &&
+            npm ci &&
+            npm rebuild better-sqlite3 --build-from-source &&
+            npm test
+          "
