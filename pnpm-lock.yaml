@@ -135,6 +135,12 @@ importers:
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.21(postcss@8.5.6)
+      electron:
+        specifier: ^38.2.1
+        version: 38.2.1
+      electron-builder:
+        specifier: ^26.0.12
+        version: 26.0.12(electron-builder-squirrel-windows@26.0.12)
       postcss:
         specifier: ^8.4.38
         version: 8.5.6
