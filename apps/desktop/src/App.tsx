@@ -5,6 +5,7 @@ import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { GraphPage } from './pages/GraphPage';
 import { NotesPage } from './pages/NotesPage';
+import { ReleasesPage } from './pages/ReleasesPage';
 import { RulesPage } from './pages/RulesPage';
 import { SettingsPage } from './pages/SettingsPage';
 
@@ -28,6 +29,7 @@ function App() {
             <Route path="/notes" element={<NotesPage />} />
             <Route path="/notes/:noteId" element={<NotesPage />} />
             <Route path="/graph" element={<GraphPage />} />
+            <Route path="/releases" element={<ReleasesPage />} />
             <Route path="/rules" element={<RulesPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>

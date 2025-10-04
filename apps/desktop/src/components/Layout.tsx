@@ -6,6 +6,7 @@ import {
   RefreshCw,
   Home,
   GitBranch,
+  Download,
 } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -27,6 +28,7 @@ const navItems: NavItem[] = [
   { name: 'Dashboard', path: '/', icon: <Home size={20} /> },
   { name: 'Notes', path: '/notes', icon: <FileText size={20} /> },
   { name: 'Graph', path: '/graph', icon: <Network size={20} /> },
+  { name: 'Releases', path: '/releases', icon: <Download size={20} /> },
   { name: 'Rules', path: '/rules', icon: <GitBranch size={20} /> },
   { name: 'Settings', path: '/settings', icon: <Settings size={20} /> },
 ];

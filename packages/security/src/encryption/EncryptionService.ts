@@ -16,6 +16,7 @@ import {
   SecurityError,
   SecurityErrorCode,
 } from '../types';
+import { ensureBuffer } from '../utils/buffer';
 
 export class EncryptionService implements IEncryptionService {
   private sodium: SodiumPlus | null = null;
@@ -45,15 +46,18 @@ export class EncryptionService implements IEncryptionService {
     }
 
     // Check cache first
-    if (this.keyCache.has(keyId)) {
-      return this.keyCache.get(keyId)!;
+    const cacheKey = `${purpose}:${keyId}`;
+
+    if (this.keyCache.has(cacheKey)) {
+      return this.keyCache.get(cacheKey)!;
     }
 
     // Derive new key
     const key = await this.kms.deriveKey(purpose, keyId);
-    this.keyCache.set(keyId, key);
+    const normalizedKey = ensureBuffer(key);
+    this.keyCache.set(cacheKey, normalizedKey);
 
-    return key;
+    return normalizedKey;
   }
 
   /**
@@ -71,7 +75,7 @@ export class EncryptionService implements IEncryptionService {
       const ciphertext = await sodium.crypto_secretbox(
         data,
         nonce,
-        new CryptographyKey(key)
+        new CryptographyKey(ensureBuffer(key))
       );
 
       const metadata: EncryptionMetadata = {
@@ -86,6 +90,9 @@ export class EncryptionService implements IEncryptionService {
         metadata,
       };
     } catch (error) {
+      if (error instanceof SecurityError) {
+        throw error;
+      }
       throw new SecurityError(
         'Encryption failed',
         SecurityErrorCode.ENCRYPTION_FAILED,
@@ -111,11 +118,14 @@ export class EncryptionService implements IEncryptionService {
       const plaintext = await sodium.crypto_secretbox_open(
         encrypted.ciphertext,
         encrypted.metadata.nonce,
-        new CryptographyKey(key)
+        new CryptographyKey(ensureBuffer(key))
       );
 
       return plaintext;
     } catch (error) {
+      if (error instanceof SecurityError) {
+        throw error;
+      }
       throw new SecurityError(
         'Decryption failed - invalid key or corrupted data',
         SecurityErrorCode.DECRYPTION_FAILED,
@@ -158,6 +168,9 @@ export class EncryptionService implements IEncryptionService {
       // Securely delete original file
       await fs.unlink(filePath);
     } catch (error) {
+      if (error instanceof SecurityError) {
+        throw error;
+      }
       throw new SecurityError(
         `Failed to encrypt file: ${filePath}`,
         SecurityErrorCode.ENCRYPTION_FAILED,
@@ -200,6 +213,9 @@ export class EncryptionService implements IEncryptionService {
       // Delete encrypted file
       await fs.unlink(filePath);
     } catch (error) {
+      if (error instanceof SecurityError) {
+        throw error;
+      }
       throw new SecurityError(
         `Failed to decrypt file: ${filePath}`,
         SecurityErrorCode.DECRYPTION_FAILED,
@@ -216,6 +232,9 @@ export class EncryptionService implements IEncryptionService {
       const contentBuffer = Buffer.from(content, 'utf-8');
       return await this.encrypt(contentBuffer, noteId);
     } catch (error) {
+      if (error instanceof SecurityError) {
+        throw error;
+      }
       throw new SecurityError(
         `Failed to encrypt note: ${noteId}`,
         SecurityErrorCode.ENCRYPTION_FAILED,
@@ -232,6 +251,9 @@ export class EncryptionService implements IEncryptionService {
       const plaintext = await this.decrypt(encrypted, noteId);
       return plaintext.toString('utf-8');
     } catch (error) {
+      if (error instanceof SecurityError) {
+        throw error;
+      }
       throw new SecurityError(
         `Failed to decrypt note: ${noteId}`,
         SecurityErrorCode.DECRYPTION_FAILED,
@@ -265,6 +287,9 @@ export class EncryptionService implements IEncryptionService {
 
       return { ciphertext, metadata };
     } catch (error) {
+      if (error instanceof SecurityError) {
+        throw error;
+      }
       throw new SecurityError(
         `Failed to encrypt attachment: ${attachmentId}`,
         SecurityErrorCode.ENCRYPTION_FAILED,
@@ -293,6 +318,9 @@ export class EncryptionService implements IEncryptionService {
 
       return plaintext;
     } catch (error) {
+      if (error instanceof SecurityError) {
+        throw error;
+      }
       throw new SecurityError(
         `Failed to decrypt attachment: ${attachmentId}`,
         SecurityErrorCode.DECRYPTION_FAILED,

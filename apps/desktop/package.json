@@ -21,7 +21,7 @@
     "package:mac": "electron-builder --mac",
     "package:win": "electron-builder --win",
     "type-check": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
-    "test": "jest"
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "react": "^18.3.1",

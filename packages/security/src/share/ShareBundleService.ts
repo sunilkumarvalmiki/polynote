@@ -3,6 +3,8 @@
  * Creates encrypted, shareable bundles of notes using password-based encryption
  */
 
+import { createHash } from 'node:crypto';
+
 import * as openpgp from 'openpgp';
 import { SodiumPlus, CryptographyKey } from 'sodium-plus';
 
@@ -13,6 +15,7 @@ import {
   SecurityError,
   SecurityErrorCode,
 } from '../types';
+import { ensureBuffer } from '../utils/buffer';
 
 interface BundleNote {
   id: string;
@@ -90,8 +93,11 @@ export class ShareBundleService implements IShareBundleService {
         format: 'binary',
       });
 
-      // Convert to Buffer
-      return Buffer.from(encrypted as Uint8Array);
+      // Convert to Buffer and append integrity checksum
+      const encryptedBuffer = Buffer.from(encrypted as Uint8Array);
+      const checksum = createHash('sha256').update(encryptedBuffer).digest();
+
+      return Buffer.concat([encryptedBuffer, checksum]);
     } catch (error) {
       throw new SecurityError(
         'Failed to create share bundle',
@@ -115,9 +121,27 @@ export class ShareBundleService implements IShareBundleService {
     try {
       await this.ensureSodium();
 
+      if (bundle.length <= 32) {
+        throw new SecurityError(
+          'Share bundle is corrupted',
+          SecurityErrorCode.INVALID_BUNDLE
+        );
+      }
+
+      const payload = bundle.subarray(0, bundle.length - 32);
+      const checksum = bundle.subarray(bundle.length - 32);
+      const expectedChecksum = createHash('sha256').update(payload).digest();
+
+      if (!checksum.equals(expectedChecksum)) {
+        throw new SecurityError(
+          'Share bundle checksum mismatch',
+          SecurityErrorCode.INVALID_BUNDLE
+        );
+      }
+
       // Decrypt using OpenPGP
       const message = await openpgp.readMessage({
-        binaryMessage: new Uint8Array(bundle),
+        binaryMessage: new Uint8Array(payload),
       });
 
       const decrypted = await openpgp.decrypt({
@@ -160,9 +184,21 @@ export class ShareBundleService implements IShareBundleService {
    */
   async verifyBundle(bundle: Buffer): Promise<boolean> {
     try {
-      // Try to read the message structure
+      if (bundle.length <= 32) {
+        return false;
+      }
+
+      const payload = bundle.subarray(0, bundle.length - 32);
+      const checksum = bundle.subarray(bundle.length - 32);
+      const expectedChecksum = createHash('sha256').update(payload).digest();
+
+      if (!checksum.equals(expectedChecksum)) {
+        return false;
+      }
+
+      // Try to read the message structure to ensure it's a valid OpenPGP payload
       await openpgp.readMessage({
-        binaryMessage: new Uint8Array(bundle),
+        binaryMessage: new Uint8Array(payload),
       });
 
       return true;
@@ -239,22 +275,22 @@ export class ShareBundleService implements IShareBundleService {
       const dataBuffer = Buffer.from(jsonData, 'utf-8');
 
       // Derive key from password
-      const salt = await sodium.randombytes_buf(16); // Argon2 requires 16 bytes
-      const key = await sodium.crypto_pwhash(
+      const salt = ensureBuffer(await sodium.randombytes_buf(16)); // Argon2 requires 16 bytes
+      const key = ensureBuffer(await sodium.crypto_pwhash(
         32,
         config.password,
         salt,
         2, // opsLimit (minimum)
         64 * 1024 * 1024, // memLimit (64 MB)
         sodium.CRYPTO_PWHASH_ALG_ARGON2ID13
-      );
+      ));
 
       // Encrypt
-      const nonce = await sodium.randombytes_buf(24);
+      const nonce = ensureBuffer(await sodium.randombytes_buf(24));
       const ciphertext = await sodium.crypto_secretbox(
         dataBuffer,
         nonce,
-        new CryptographyKey(key as unknown as Buffer)
+        new CryptographyKey(ensureBuffer(key))
       );
 
       // Serialize metadata separately (unencrypted for quick access)
@@ -320,20 +356,20 @@ export class ShareBundleService implements IShareBundleService {
       }
 
       // Derive key from password
-      const key = await sodium.crypto_pwhash(
+      const key = ensureBuffer(await sodium.crypto_pwhash(
         32,
         password,
         salt,
         2,
         64 * 1024 * 1024,
         sodium.CRYPTO_PWHASH_ALG_ARGON2ID13
-      );
+      ));
 
       // Decrypt
       const plaintext = await sodium.crypto_secretbox_open(
         ciphertext,
         nonce,
-        new CryptographyKey(key as unknown as Buffer)
+        new CryptographyKey(ensureBuffer(key))
       );
 
       // Parse data

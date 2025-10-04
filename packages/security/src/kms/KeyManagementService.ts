@@ -12,6 +12,7 @@ import {
   SecurityError,
   SecurityErrorCode,
 } from '../types';
+import { ensureBuffer } from '../utils/buffer';
 
 /**
  * BIP39 word list subset for recovery phrases (simplified for demo)
@@ -34,7 +35,8 @@ export class KeyManagementService implements IKeyManagementService {
   private initialized = false;
 
   // Key derivation parameters
-  private readonly SALT_LENGTH = 16; // Argon2 requires 16 bytes
+  private readonly SALT_LENGTH = 32;
+  private readonly DERIVATION_SALT_LENGTH = 16; // Argon2 requires 16 bytes
   private readonly KEY_LENGTH = 32;
   private readonly DEFAULT_ITERATIONS = 2; // Argon2id ops limit (minimum for testing)
 
@@ -47,19 +49,16 @@ export class KeyManagementService implements IKeyManagementService {
       this.sodium = await SodiumPlus.auto();
 
       // Use provided salt or generate new one
-      this.salt = config.salt || await this.sodium.randombytes_buf(this.SALT_LENGTH);
+      this.salt = await this.resolveSalt(config.salt);
 
       // Derive master key using Argon2id
       const masterKeyBuffer = await this.deriveMasterKey(
         config.passphrase,
-        this.salt,
+        this.getDerivationSalt(this.salt),
         config.iterations || this.DEFAULT_ITERATIONS
       );
 
-      // Ensure masterKeyBuffer is a proper Buffer
-      const keyBuf = masterKeyBuffer instanceof Buffer
-        ? masterKeyBuffer
-        : Buffer.from(masterKeyBuffer as any);
+      const keyBuf = ensureBuffer(masterKeyBuffer);
 
       this.masterKey = new CryptographyKey(keyBuf);
       this.initialized = true;
@@ -127,7 +126,7 @@ export class KeyManagementService implements IKeyManagementService {
 
     try {
       // Generate 16 bytes of entropy (128 bits = 12 words)
-      const entropy = await this.sodium.randombytes_buf(16);
+      const entropy = ensureBuffer(await this.sodium.randombytes_buf(16));
 
       // Convert entropy to word indices
       const words: string[] = [];
@@ -177,20 +176,21 @@ export class KeyManagementService implements IKeyManagementService {
 
       // Derive master key from entropy
       // In production, use proper BIP39 derivation
-      this.salt = await this.sodium.randombytes_buf(this.SALT_LENGTH);
+      this.salt = await this.resolveSalt();
       const masterKeyBuffer = await this.sodium.crypto_generichash(
         entropy as Buffer,
         undefined,
         this.KEY_LENGTH
       );
 
-      this.masterKey = new CryptographyKey(masterKeyBuffer as unknown as Buffer);
+      this.masterKey = new CryptographyKey(ensureBuffer(masterKeyBuffer));
       this.initialized = true;
     } catch (error) {
+      const cause = error as Error;
       throw new SecurityError(
-        'Failed to recover from recovery phrase',
+        `Failed to recover from recovery phrase: ${cause.message}`,
         SecurityErrorCode.INVALID_RECOVERY_PHRASE,
-        error as Error
+        cause
       );
     }
   }
@@ -208,17 +208,21 @@ export class KeyManagementService implements IKeyManagementService {
 
     try {
       // Derive encryption key from password
-      const passwordKey = await this.deriveMasterKey(password, this.salt, this.DEFAULT_ITERATIONS);
+      const passwordKey = await this.deriveMasterKey(
+        password,
+        this.getDerivationSalt(this.salt),
+        this.DEFAULT_ITERATIONS
+      );
 
       // Generate nonce
-      const nonce = await this.sodium.randombytes_buf(24);
+      const nonce = ensureBuffer(await this.sodium.randombytes_buf(24));
 
       // Encrypt master key
       const masterKeyBuffer = await this.masterKey.getBuffer();
       const encrypted = await this.sodium.crypto_secretbox(
         masterKeyBuffer,
         nonce,
-        new CryptographyKey(passwordKey)
+        new CryptographyKey(ensureBuffer(passwordKey))
       );
 
       // Return: salt + nonce + encrypted key
@@ -240,23 +244,26 @@ export class KeyManagementService implements IKeyManagementService {
       this.sodium = await SodiumPlus.auto();
 
       // Extract salt, nonce, and ciphertext
-      const SALT_LEN = 16; // Use correct salt length
-      const salt = encryptedKey.subarray(0, SALT_LEN);
-      const nonce = encryptedKey.subarray(SALT_LEN, SALT_LEN + 24);
-      const ciphertext = encryptedKey.subarray(SALT_LEN + 24);
+      const salt = encryptedKey.subarray(0, this.SALT_LENGTH);
+      const nonce = encryptedKey.subarray(this.SALT_LENGTH, this.SALT_LENGTH + 24);
+      const ciphertext = encryptedKey.subarray(this.SALT_LENGTH + 24);
 
       // Derive decryption key from password
-      const passwordKey = await this.deriveMasterKey(password, salt, this.DEFAULT_ITERATIONS);
+      const passwordKey = await this.deriveMasterKey(
+        password,
+        this.getDerivationSalt(salt),
+        this.DEFAULT_ITERATIONS
+      );
 
       // Decrypt master key
       const decrypted = await this.sodium.crypto_secretbox_open(
         ciphertext,
         nonce,
-        new CryptographyKey(passwordKey)
+        new CryptographyKey(ensureBuffer(passwordKey))
       );
 
-      this.masterKey = new CryptographyKey(decrypted);
-      this.salt = salt;
+      this.masterKey = new CryptographyKey(ensureBuffer(decrypted));
+      this.salt = ensureBuffer(salt);
       this.initialized = true;
     } catch (error) {
       throw new SecurityError(
@@ -283,15 +290,15 @@ export class KeyManagementService implements IKeyManagementService {
       const oldKey = this.masterKey;
 
       // Generate new master key
-      const newSalt = newConfig.salt || await this.sodium.randombytes_buf(this.SALT_LENGTH);
+      const newSalt = await this.resolveSalt(newConfig.salt);
       const newMasterKeyBuffer = await this.deriveMasterKey(
         newConfig.passphrase,
-        newSalt,
+        this.getDerivationSalt(newSalt),
         newConfig.iterations || this.DEFAULT_ITERATIONS
       );
 
       // Update to new key
-      this.masterKey = new CryptographyKey(newMasterKeyBuffer);
+      this.masterKey = new CryptographyKey(ensureBuffer(newMasterKeyBuffer));
       this.salt = newSalt;
 
       // Securely wipe old key from memory
@@ -320,6 +327,39 @@ export class KeyManagementService implements IKeyManagementService {
     this.initialized = false;
   }
 
+  private async resolveSalt(source?: Buffer): Promise<Buffer> {
+    if (!this.sodium) {
+      throw new Error('Sodium not initialized');
+    }
+
+    if (!source) {
+      return ensureBuffer(await this.sodium.randombytes_buf(this.SALT_LENGTH));
+    }
+
+    const normalized = ensureBuffer(source);
+
+    if (normalized.length === this.SALT_LENGTH) {
+      return Buffer.from(normalized);
+    }
+
+    if (normalized.length === this.DERIVATION_SALT_LENGTH) {
+      const expanded = await this.sodium.crypto_generichash(
+        normalized,
+        undefined,
+        this.SALT_LENGTH
+      );
+      return ensureBuffer(expanded as unknown as Buffer);
+    }
+
+    throw new Error(
+      `Salt must be ${this.DERIVATION_SALT_LENGTH} or ${this.SALT_LENGTH} bytes long`
+    );
+  }
+
+  private getDerivationSalt(salt: Buffer): Buffer {
+    return salt.subarray(0, this.DERIVATION_SALT_LENGTH);
+  }
+
   /**
    * Derive master key using Argon2id
    */
@@ -346,8 +386,7 @@ export class KeyManagementService implements IKeyManagementService {
       this.sodium.CRYPTO_PWHASH_ALG_ARGON2ID13
     );
 
-    // Already returns a Buffer
-    return key as unknown as Buffer;
+    return ensureBuffer(key);
   }
 
   /**

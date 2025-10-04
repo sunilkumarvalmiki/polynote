@@ -14,11 +14,11 @@ Before starting, make sure you have:
 
 ### Step 1: Download PolyNote
 
-Visit our [releases page](https://github.com/polynote/polynote/releases) and download the installer for your operating system:
+Visit our [releases page](https://github.com/polynote/polynote/releases/latest) or grab the installer directly below. You can also open **Releases** from the PolyNote sidebar once the app is installed to access these links anytime.
 
-- **Windows**: Download `polynote-windows-x64.exe`
-- **macOS**: Download `polynote-macos-universal.dmg`
-- **Linux**: Download `polynote-linux-x64.AppImage` (or `.deb`/`.rpm`)
+- **Windows**: [Installer (.exe)](https://github.com/polynote/polynote/releases/latest/download/polynote-windows-x64.exe)
+- **macOS**: [Disk image (.dmg)](https://github.com/polynote/polynote/releases/latest/download/polynote-macos-universal.dmg)
+- **Linux**: [AppImage](https://github.com/polynote/polynote/releases/latest/download/polynote-linux-x64.AppImage) or [Debian package](https://github.com/polynote/polynote/releases/latest/download/polynote-linux-x64.deb)
 
 ### Step 2: Install
 
