@@ -3,6 +3,8 @@ import { FileText, Network, Settings, RefreshCw, Home, GitBranch, Download } fro
 import { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+import type {} from '../electron.d.ts';
+
 import { SyncStatus } from './SyncStatus';
 
 interface LayoutProps {
