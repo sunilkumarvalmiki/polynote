@@ -202,28 +202,28 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
             </button>
             <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
               <button
-                onClick={handleAISummarize}
+                onClick={() => void handleAISummarize()}
                 className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
               >
                 <Sparkles size={14} />
                 Summarize
               </button>
               <button
-                onClick={() => handleAITranslate('te')}
+                onClick={() => void handleAITranslate('te')}
                 className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
               >
                 <Languages size={14} />
                 Translate to Telugu
               </button>
               <button
-                onClick={() => handleAITranslate('hi')}
+                onClick={() => void handleAITranslate('hi')}
                 className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
               >
                 <Languages size={14} />
                 Translate to Hindi
               </button>
               <button
-                onClick={() => handleAIRewrite('formal')}
+                onClick={() => void handleAIRewrite('formal')}
                 className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
               >
                 <RefreshCw size={14} />

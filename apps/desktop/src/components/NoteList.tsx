@@ -13,8 +13,9 @@ interface NoteListProps {
 interface Note {
   id: string;
   title: string;
-  body: string;
+  content: string;
   tags?: string[];
+  createdAt: string;
   updatedAt: string;
 }
 
@@ -25,10 +26,12 @@ export function NoteList({ searchQuery, selectedNoteId, onNoteSelect }: NoteList
   const { data: notes = [], isLoading } = useQuery<Note[]>({
     queryKey: ['notes', searchQuery],
     queryFn: async () => {
+      const api = window.electronAPI;
+      if (!api) return [];
       if (searchQuery) {
-        return window.electronAPI?.searchNotes(searchQuery) || [];
+        return await api.searchNotes(searchQuery);
       }
-      return window.electronAPI?.getNotes() || [];
+      return await api.getNotes();
     },
   });
 
@@ -106,7 +109,7 @@ export function NoteList({ searchQuery, selectedNoteId, onNoteSelect }: NoteList
                   {note.title || 'Untitled'}
                 </h3>
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                  {note.body || 'No content'}
+                  {note.content || 'No content'}
                 </p>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>
@@ -117,7 +120,7 @@ export function NoteList({ searchQuery, selectedNoteId, onNoteSelect }: NoteList
                   </span>
                   {note.tags && note.tags.length > 0 && (
                     <div className="flex gap-1">
-                      {note.tags.slice(0, 2).map(tag => (
+                      {note.tags.slice(0, 2).map((tag: string) => (
                         <span
                           key={tag}
                           className="px-1.5 py-0.5 bg-primary/10 text-primary rounded text-xs"
