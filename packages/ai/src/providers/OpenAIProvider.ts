@@ -208,12 +208,18 @@ export class OpenAIProvider extends BaseProvider {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
+      let readerDone = false;
+      while (!readerDone) {
+        const result = await reader.read();
+        const done = result.done;
+        const value = result.value;
 
-        if (done) break;
+        if (done) {
+          readerDone = true;
+          break;
+        }
 
-        buffer += decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value as Uint8Array, { stream: true });
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 

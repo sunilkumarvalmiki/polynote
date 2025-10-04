@@ -56,6 +56,7 @@ export class JoplinConnector extends BaseConnector {
     if (!this.client) {
       throw new Error('Joplin client not initialized');
     }
+    await Promise.resolve();
   }
 
   async pullChanges(since?: Date): Promise<Note[]> {
@@ -69,7 +70,7 @@ export class JoplinConnector extends BaseConnector {
     let hasMore = true;
 
     while (hasMore) {
-      const params: any = {
+      const params: Record<string, unknown> = {
         fields:
           'id,title,body,created_time,updated_time,user_created_time,user_updated_time,is_todo,todo_completed,parent_id',
         limit,
