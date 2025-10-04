@@ -18,11 +18,11 @@ export function setLanguage(lang: Language): void {
 
 export function t(key: string): string {
   const keys = key.split('.');
-  let value: any = translations[currentLanguage];
+  let value: unknown = translations[currentLanguage];
 
   for (const k of keys) {
-    if (value && typeof value === 'object') {
-      value = value[k];
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      value = (value as Record<string, unknown>)[k];
     } else {
       return key; // Return key if translation not found
     }

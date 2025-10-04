@@ -3,26 +3,22 @@ import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface SyncStatusData {
-  isRunning: boolean;
-  lastSync: string;
-  connectors: Array<{
-    id: string;
-    name: string;
-    status: 'idle' | 'syncing' | 'error';
-    enabled: boolean;
-  }>;
+  isActive: boolean;
+  lastSync?: string;
+  connectorId?: string;
+  progress?: number;
 }
 
 export function SyncStatus() {
   const [status, setStatus] = useState<SyncStatusData | null>(null);
 
   useEffect(() => {
-    loadStatus();
+    void loadStatus();
 
     // Listen for sync progress updates
     const unsubscribe = window.electronAPI?.onSyncProgress?.(progress => {
       console.log('Sync progress:', progress);
-      loadStatus();
+      void loadStatus();
     });
 
     return () => unsubscribe?.();
@@ -30,8 +26,10 @@ export function SyncStatus() {
 
   const loadStatus = async () => {
     try {
-      const data = await window.electronAPI?.getSyncStatus();
-      setStatus(data);
+      const api = window.electronAPI;
+      if (!api) return;
+      const data = await api.getSyncStatus();
+      if (data) setStatus(data);
     } catch (error) {
       console.error('Failed to load sync status:', error);
     }
@@ -60,29 +58,32 @@ export function SyncStatus() {
       {/* Last Sync */}
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Clock size={12} />
-        <span>Last sync: {formatLastSync(status.lastSync)}</span>
+        <span>
+          Last sync: {status.lastSync ? formatLastSync(status.lastSync) : 'Never'}
+        </span>
       </div>
 
-      {/* Connectors */}
+      {/* Sync Status */}
       <div className="space-y-1">
-        {status.connectors
-          .filter(c => c.enabled)
-          .map(connector => (
-            <div
-              key={connector.id}
-              className={clsx(
-                'flex items-center gap-2 text-xs px-2 py-1.5 rounded',
-                connector.status === 'syncing' && 'bg-primary/10 text-primary',
-                connector.status === 'error' && 'bg-destructive/10 text-destructive',
-                connector.status === 'idle' && 'bg-muted/50 text-muted-foreground'
-              )}
-            >
-              {connector.status === 'syncing' && <Clock size={12} className="animate-spin" />}
-              {connector.status === 'error' && <AlertCircle size={12} />}
-              {connector.status === 'idle' && <CheckCircle size={12} />}
-              <span>{connector.name}</span>
-            </div>
-          ))}
+        <div
+          className={clsx(
+            'flex items-center gap-2 text-xs px-2 py-1.5 rounded',
+            status.isActive ? 'bg-primary/10 text-primary' : 'bg-muted/50 text-muted-foreground'
+          )}
+        >
+          {status.isActive ? (
+            <>
+              <Clock size={12} className="animate-spin" />
+              <span>Syncing{status.connectorId ? ` (${status.connectorId})` : ''}...</span>
+              {status.progress !== undefined && <span>{Math.round(status.progress * 100)}%</span>}
+            </>
+          ) : (
+            <>
+              <CheckCircle size={12} />
+              <span>Idle</span>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

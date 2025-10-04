@@ -99,7 +99,7 @@ export function Layout({ children }: LayoutProps) {
         {/* Sync Controls */}
         <div className="p-4 border-t border-border space-y-3">
           <button
-            onClick={handleSync}
+            onClick={() => void handleSync()}
             disabled={isSyncing}
             className={clsx(
               'w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-colors',
