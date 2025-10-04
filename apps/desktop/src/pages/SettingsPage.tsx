@@ -3,25 +3,34 @@ import { Moon, Sun, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface Settings {
-  theme: 'light' | 'dark';
-  language: 'en' | 'te' | 'hi';
-  syncInterval: number;
-  aiProvider: string;
+  theme: 'light' | 'dark' | 'system';
+  language: string;
+  syncEnabled: boolean;
+  aiProvider?: string;
+  [key: string]: unknown;
 }
 
 export function SettingsPage() {
   const queryClient = useQueryClient();
   const [localSettings, setLocalSettings] = useState<Settings | null>(null);
 
-  const { data: settings } = useQuery<Settings>({
+  const { data: settings } = useQuery({
     queryKey: ['settings'],
-    queryFn: () => window.electronAPI?.getSettings(),
+    queryFn: async () => {
+      const api = window.electronAPI;
+      if (!api) return null;
+      return await api.getSettings();
+    },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (updates: Partial<Settings>) => window.electronAPI?.updateSettings(updates),
+    mutationFn: async (updates: Partial<Settings>) => {
+      const api = window.electronAPI;
+      if (!api) throw new Error('Electron API not available');
+      await api.updateSettings(updates);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['settings'] });
+      void queryClient.invalidateQueries({ queryKey: ['settings'] });
     },
   });
 
@@ -37,13 +46,13 @@ export function SettingsPage() {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   };
 
-  const handleLanguageChange = (language: 'en' | 'te' | 'hi') => {
+  const handleLanguageChange = (language: string) => {
     setLocalSettings(prev => (prev ? { ...prev, language } : null));
     updateMutation.mutate({ language });
   };
 
   const handleSyncIntervalChange = (syncInterval: number) => {
-    setLocalSettings(prev => (prev ? { ...prev, syncInterval } : null));
+    setLocalSettings(prev => (prev ? { ...prev, syncInterval: syncInterval } : null));
     updateMutation.mutate({ syncInterval });
   };
 
@@ -113,7 +122,7 @@ export function SettingsPage() {
             <label className="block text-sm font-medium mb-2">Interface Language</label>
             <select
               value={localSettings.language}
-              onChange={e => handleLanguageChange(e.target.value as any)}
+              onChange={e => handleLanguageChange(e.target.value)}
               className="w-full px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="en">English</option>
@@ -133,7 +142,7 @@ export function SettingsPage() {
               type="number"
               min="60"
               max="3600"
-              value={localSettings.syncInterval}
+              value={(localSettings as Record<string, unknown>).syncInterval as number ?? 300}
               onChange={e => handleSyncIntervalChange(parseInt(e.target.value))}
               className="w-full px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             />

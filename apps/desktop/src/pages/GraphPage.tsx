@@ -16,9 +16,21 @@ export function GraphPage() {
   useEffect(() => {
     if (!containerRef.current || !graphData) return;
 
-    // Create network
-    const nodes = new DataSet(graphData.nodes || []) as any;
-    const edges = new DataSet(graphData.edges || []) as any;
+    // Create network - vis-network DataSet expects different property names
+    const nodes = new DataSet(
+      (graphData.nodes || []).map(node => ({
+        id: node.id,
+        label: node.label,
+        group: node.type,
+      }))
+    );
+    const edges = new DataSet(
+      (graphData.edges || []).map(edge => ({
+        from: edge.source,
+        to: edge.target,
+        label: edge.label,
+      }))
+    );
 
     const options = {
       nodes: {

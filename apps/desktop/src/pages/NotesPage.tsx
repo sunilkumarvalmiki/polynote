@@ -16,9 +16,11 @@ export function NotesPage() {
 
   const handleNoteCreate = async () => {
     try {
-      const newNote = await window.electronAPI?.createNote({
+      const api = window.electronAPI;
+      if (!api) return;
+      const newNote = await api.createNote({
         title: 'Untitled Note',
-        body: '',
+        content: '',
         tags: [],
       });
       if (newNote) {
@@ -37,7 +39,7 @@ export function NotesPage() {
         <div className="p-4 border-b border-border">
           <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search notes..." />
           <button
-            onClick={handleNoteCreate}
+            onClick={() => void handleNoteCreate()}
             className="w-full mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             + New Note
