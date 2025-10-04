@@ -62,8 +62,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            platform: linux
+          # - os: ubuntu-latest
+          #   platform: linux
           - os: macos-latest
             platform: mac
           - os: windows-latest
