@@ -9,7 +9,7 @@ export {
   execute,
   searchNotes,
   Database,
-} from './db/connection';
+} from './db/connection.js';
 
 // Types
 export type {
@@ -27,7 +27,7 @@ export type {
   IConnector,
   SyncResult,
   ConflictResolution,
-} from './types';
+} from './types/index.js';
 
 // Utilities
-export { generateChecksum, verifyChecksum, generateFileChecksum } from './utils/checksum';
+export { generateChecksum, verifyChecksum, generateFileChecksum } from './utils/checksum.js';

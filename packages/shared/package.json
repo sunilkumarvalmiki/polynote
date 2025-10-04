@@ -2,6 +2,7 @@
   "name": "@polynote/shared",
   "version": "1.0.0",
   "description": "Shared types, utilities, and database layer for PolyNote",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

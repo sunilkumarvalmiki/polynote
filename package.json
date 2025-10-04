@@ -14,12 +14,12 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "pnpm --filter @polynote/server dev & pnpm --filter @polynote/desktop dev",
-    "build": "pnpm -r build",
-    "test": "pnpm -r test",
+    "dev": "npm run dev --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
     "lint": "eslint . --ext .ts,.tsx",
-    "type-check": "pnpm -r type-check",
-    "clean": "pnpm -r clean && rm -rf node_modules",
+    "type-check": "npm run type-check --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
     "prepare": "husky install"
   },
   "devDependencies": {
