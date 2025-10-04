@@ -234,32 +234,35 @@ export class NotionConnector extends BaseConnector {
     try {
       const title = this.extractTitle(page);
       const blocks = await this.rateLimiter(() =>
-        this.client!.blocks.children.list({ block_id: page.id as string })
+        this.client!.blocks.children.list({ block_id: (page as { id: string }).id })
       );
 
       const body = this.notionBlocksToMarkdown(blocks.results as NotionBlock[]);
-      const createdTime = new Date(page.created_time as string).getTime();
-      const updatedTime = new Date(page.last_edited_time as string).getTime();
+      const createdTime = new Date((page as { created_time: string }).created_time).getTime();
+      const updatedTime = new Date((page as { last_edited_time: string }).last_edited_time).getTime();
 
       return {
-        id: page.id as string,
+        id: (page as { id: string }).id,
         title,
         body,
         created_at: createdTime,
         updated_at: updatedTime,
         source_connector: this.name,
-        source_id: page.id,
+        source_id: (page as { id: string }).id,
         checksum: generateChecksum(body),
         tags: [],
       };
     } catch (error) {
-      console.error(`Failed to convert page ${page.id}:`, error);
+      console.error(`Failed to convert page ${(page as { id: string }).id}:`, error);
       return null;
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private extractTitle(page: any): string {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (page.properties?.title?.title?.[0]?.text?.content) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
       return page.properties.title.title[0].text.content;
     }
     if (page.properties?.Name?.title?.[0]?.text?.content) {
