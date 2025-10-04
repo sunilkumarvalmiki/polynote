@@ -79,7 +79,13 @@ export class JoplinConnector extends BaseConnector {
 
       const response = await this.retry(() => this.client!.get('/notes', { params }));
 
-      const joplinNotes = response.data.items as JoplinNote[];
+      interface JoplinApiResponse {
+        items: JoplinNote[];
+        has_more: boolean;
+      }
+
+      const apiData = response.data as JoplinApiResponse;
+      const joplinNotes = apiData.items;
 
       for (const joplinNote of joplinNotes) {
         const note = this.convertJoplinToNote(joplinNote);
@@ -88,7 +94,7 @@ export class JoplinConnector extends BaseConnector {
         }
       }
 
-      hasMore = response.data.has_more;
+      hasMore = apiData.has_more;
       page++;
     }
 
@@ -116,9 +122,14 @@ export class JoplinConnector extends BaseConnector {
         })
       );
 
-      return this.convertJoplinToNote(response.data);
+      return this.convertJoplinToNote(response.data as JoplinNote);
     } catch (error) {
-      if ((error as any).response?.status === 404) {
+      interface AxiosError {
+        response?: {
+          status: number;
+        };
+      }
+      if ((error as AxiosError).response?.status === 404) {
         return null;
       }
       throw error;
@@ -137,8 +148,12 @@ export class JoplinConnector extends BaseConnector {
 
     const response = await this.retry(() => this.client!.post('/notes', joplinNote));
 
+    interface JoplinCreateResponse {
+      id: string;
+    }
+
     const createdNote: Note = {
-      id: response.data.id,
+      id: (response.data as JoplinCreateResponse).id,
       title: note.title,
       body: note.body,
       created_at: Date.now(),

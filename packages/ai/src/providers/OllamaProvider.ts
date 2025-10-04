@@ -169,14 +169,14 @@ export class OllamaProvider extends BaseProvider {
       while (!readerDone) {
         const result = await reader.read();
         const done = result.done;
-        const value = result.value;
-
+        
         if (done) {
           readerDone = true;
           break;
         }
 
-        buffer += decoder.decode(value as Uint8Array, { stream: true });
+        const value = result.value as Uint8Array;
+        buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 
