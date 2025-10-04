@@ -195,7 +195,7 @@ console.log('Hello');
 
     it('should handle binary files', async () => {
       const binaryData = Buffer.from([0x00, 0x01, 0x02, 0xff, 0xfe, 0xfd]);
-      const binaryFilePath = '/tmp/test-binary-file.bin';
+      const binaryFilePath = join(tmpdir(), 'test-binary-file.bin');
 
       await fs.writeFile(binaryFilePath, binaryData);
       await encryption.encryptFile(binaryFilePath, 'binary-key');
