@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { DataSet } from 'vis-data';
-import { Network } from 'vis-network';
+import { Network, Edge, Node } from 'vis-network';
 import 'vis-network/styles/vis-network.css';
 
 export function GraphPage() {
@@ -17,20 +17,22 @@ export function GraphPage() {
     if (!containerRef.current || !graphData) return;
 
     // Create network - vis-network DataSet expects different property names
-    const nodes = new DataSet(
-      (graphData.nodes || []).map(node => ({
-        id: node.id,
-        label: node.label,
-        group: node.type,
-      }))
-    );
-    const edges = new DataSet(
-      (graphData.edges || []).map(edge => ({
-        from: edge.source,
-        to: edge.target,
-        label: edge.label,
-      }))
-    );
+    const nodeData: Node[] = (graphData.nodes || []).map(node => ({
+      id: node.id,
+      label: node.label,
+      group: node.type,
+    }));
+    
+    // Map edges to vis-network format - edges need id property
+    const edgeData: Edge[] = (graphData.edges || []).map((edge, index) => ({
+      id: `edge-${index}`,
+      from: edge.source,
+      to: edge.target,
+      label: edge.label,
+    }));
+    
+    const nodes = new DataSet(nodeData);
+    const edges = new DataSet(edgeData);
 
     const options = {
       nodes: {

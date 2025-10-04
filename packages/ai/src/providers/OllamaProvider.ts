@@ -46,12 +46,12 @@ export class OllamaProvider extends BaseProvider {
       // Verify model is available
       const data = (await response.json()) as { models?: Array<{ name: string }> };
       const models = data.models || [];
-      const modelExists = models.some((m: any) => m.name === this.config.model);
+      const modelExists = models.some((m: { name: string }) => m.name === this.config.model);
 
       if (!modelExists) {
         console.warn(
           `Model ${this.config.model} not found in Ollama. Available models:`,
-          models.map((m: any) => m.name).join(', ')
+          models.map((m: { name: string }) => m.name).join(', ')
         );
       }
 

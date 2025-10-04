@@ -68,6 +68,7 @@ export class ClaudeProvider extends BaseProvider {
   async initialize(): Promise<void> {
     // Claude doesn't have a simple health check endpoint
     // We'll validate on first request
+    await Promise.resolve();
     this.initialized = true;
   }
 
@@ -203,12 +204,18 @@ export class ClaudeProvider extends BaseProvider {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
+      let readerDone = false;
+      while (!readerDone) {
+        const result = await reader.read();
+        const done = result.done;
+        const value = result.value;
 
-        if (done) break;
+        if (done) {
+          readerDone = true;
+          break;
+        }
 
-        buffer += decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value as Uint8Array, { stream: true });
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 

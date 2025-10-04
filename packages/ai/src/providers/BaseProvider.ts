@@ -80,6 +80,7 @@ export abstract class BaseProvider implements IProvider {
    * Cleanup and shutdown - default implementation
    */
   async shutdown(): Promise<void> {
+    await Promise.resolve();
     this.initialized = false;
   }
 

@@ -18,7 +18,7 @@ const SECRET_PATTERNS = [
   // GitHub tokens
   /gh[pousr]_[A-Za-z0-9]{36}/g,
   // Generic bearer tokens
-  /Bearer\s+[A-Za-z0-9_\-\.]+/gi,
+  /Bearer\s+[A-Za-z0-9_\-.]+/gi,
   // Passwords in common formats
   /password["\s:=]+[^\s"]+/gi,
   /passwd["\s:=]+[^\s"]+/gi,
@@ -181,6 +181,6 @@ export function getPromptForOperation(
       return getChatPrompt(content, params?.customInstructions);
 
     default:
-      throw new Error(`Unknown operation type: ${operation}`);
+      throw new Error(`Unknown operation type: ${operation as string}`);
   }
 }
