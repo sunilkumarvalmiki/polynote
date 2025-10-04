@@ -1,0 +1,87 @@
+{
+  "app": {
+    "name": "PolyNote",
+    "tagline": "Universal Note Sync"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "notes": "Notes",
+    "graph": "Graph",
+    "rules": "Rules",
+    "settings": "Settings"
+  },
+  "sync": {
+    "syncNow": "Sync Now",
+    "syncing": "Syncing...",
+    "lastSync": "Last sync",
+    "justNow": "Just now"
+  },
+  "notes": {
+    "newNote": "New Note",
+    "untitled": "Untitled",
+    "noContent": "No content",
+    "search": "Search notes...",
+    "noNotes": "No notes yet",
+    "noNotesFound": "No notes found matching your search",
+    "save": "Save",
+    "saving": "Saving...",
+    "preview": "Preview",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this note?"
+  },
+  "ai": {
+    "summarize": "Summarize",
+    "translate": "Translate",
+    "rewrite": "Rewrite",
+    "translateToTelugu": "Translate to Telugu",
+    "translateToHindi": "Translate to Hindi",
+    "rewriteFormal": "Rewrite (Formal)"
+  },
+  "graph": {
+    "title": "Knowledge Graph",
+    "subtitle": "Visualize connections between your notes"
+  },
+  "rules": {
+    "title": "Sync Rules",
+    "subtitle": "Define rules to automate note organization and syncing",
+    "newRule": "New Rule",
+    "createNew": "Create New Rule",
+    "ruleName": "Rule Name",
+    "condition": "Condition",
+    "action": "Action",
+    "create": "Create",
+    "creating": "Creating...",
+    "cancel": "Cancel",
+    "noRules": "No rules yet. Create your first rule to automate your workflow."
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure your PolyNote experience",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "language": "Language & Region",
+    "interfaceLanguage": "Interface Language",
+    "syncSettings": "Sync Settings",
+    "syncInterval": "Sync Interval (seconds)",
+    "syncIntervalHelp": "How often to automatically sync notes (60-3600 seconds)",
+    "aiSettings": "AI Settings",
+    "aiProvider": "Preferred AI Provider",
+    "aiProviderHelp": "Local providers run on your machine, cloud providers require API keys",
+    "about": "About",
+    "version": "Version",
+    "license": "License"
+  },
+  "dashboard": {
+    "welcome": "Welcome to PolyNote. Here's an overview of your notes and sync status.",
+    "totalNotes": "Total Notes",
+    "activeConnectors": "Active Connectors",
+    "activeRules": "Active Rules",
+    "recentNotes": "Recent Notes",
+    "viewAll": "View all",
+    "createFirst": "No notes yet. Create your first note to get started.",
+    "createNote": "Create Note"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "commonjs",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "moduleResolution": "node",
+    "noEmit": false,
+    "jsx": "preserve",
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@polynote/shared": ["../../packages/shared/src"],
+      "@polynote/ai": ["../../packages/ai/src"],
+      "@polynote/security": ["../../packages/security/src"]
+    }
+  },
+  "include": ["electron/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src"]
+}

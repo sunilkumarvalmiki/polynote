@@ -1,0 +1,80 @@
+{
+  "name": "@polynote/desktop",
+  "version": "1.0.0",
+  "description": "PolyNote Desktop Application - Electron + React",
+  "main": "dist/main.js",
+  "author": "PolyNote Team",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
+    "dev:vite": "vite",
+    "dev:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .",
+    "build": "npm run build:renderer && npm run build:main",
+    "build:renderer": "vite build",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:all": "npm run build && electron-builder --mac --win --linux",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:win": "npm run build && electron-builder --win",
+    "build:linux": "npm run build && electron-builder --linux",
+    "type-check": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.3",
+    "@tanstack/react-query": "^5.61.5",
+    "@tanstack/react-virtual": "^3.11.6",
+    "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.0",
+    "remark-frontmatter": "^5.0.0",
+    "vis-network": "^9.1.9",
+    "vis-data": "^7.1.9",
+    "zustand": "^5.0.3",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.4.0",
+    "tailwindcss": "^3.4.1",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38"
+  },
+  "build": {
+    "appId": "com.polynote.desktop",
+    "productName": "PolyNote",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "pkg"
+      ],
+      "icon": "assets/icon.icns"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "category": "Office",
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
+      "icon": "assets/icon.png"
+    }
+  }
+}
