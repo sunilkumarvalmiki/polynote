@@ -3,47 +3,51 @@ import clsx from 'clsx';
 import { Plus, Trash2, Edit } from 'lucide-react';
 import { useState } from 'react';
 
-interface Rule {
-  id: string;
-  name: string;
-  condition: string;
-  action: string;
-  enabled: boolean;
-}
-
 export function RulesPage() {
   const queryClient = useQueryClient();
   const [isCreating, setIsCreating] = useState(false);
   const [newRule, setNewRule] = useState({
     name: '',
-    condition: '',
-    action: '',
+    trigger: '',
+    actions: [''],
   });
 
-  const { data: rules = [] } = useQuery<Rule[]>({
+  const { data: rules = [] } = useQuery({
     queryKey: ['rules'],
-    queryFn: () => window.electronAPI?.getRules() || Promise.resolve([]),
+    queryFn: async () => {
+      const api = window.electronAPI;
+      if (!api) return [];
+      return await api.getRules();
+    },
   });
 
   const createMutation = useMutation({
-    mutationFn: (rule: any) => window.electronAPI?.createRule(rule),
+    mutationFn: async (rule: { name: string; trigger: string; actions: string[] }) => {
+      const api = window.electronAPI;
+      if (!api) throw new Error('Electron API not available');
+      return await api.createRule({ ...rule, enabled: true });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rules'] });
+      void queryClient.invalidateQueries({ queryKey: ['rules'] });
       setIsCreating(false);
-      setNewRule({ name: '', condition: '', action: '' });
+      setNewRule({ name: '', trigger: '', actions: [''] });
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (ruleId: string) => window.electronAPI?.deleteRule(ruleId),
+    mutationFn: async (ruleId: string) => {
+      const api = window.electronAPI;
+      if (!api) throw new Error('Electron API not available');
+      await api.deleteRule(ruleId);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rules'] });
+      void queryClient.invalidateQueries({ queryKey: ['rules'] });
     },
   });
 
   const handleCreate = () => {
-    if (newRule.name && newRule.condition && newRule.action) {
-      createMutation.mutate({ ...newRule, enabled: true });
+    if (newRule.name && newRule.trigger && newRule.actions[0]) {
+      createMutation.mutate(newRule);
     }
   };
 
@@ -83,21 +87,21 @@ export function RulesPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Condition</label>
+                <label className="block text-sm font-medium mb-1">Trigger</label>
                 <input
                   type="text"
-                  value={newRule.condition}
-                  onChange={e => setNewRule({ ...newRule, condition: e.target.value })}
+                  value={newRule.trigger}
+                  onChange={e => setNewRule({ ...newRule, trigger: e.target.value })}
                   placeholder="e.g., tag:blog"
                   className="w-full px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Action</label>
+                <label className="block text-sm font-medium mb-1">Actions</label>
                 <input
                   type="text"
-                  value={newRule.action}
-                  onChange={e => setNewRule({ ...newRule, action: e.target.value })}
+                  value={newRule.actions[0]}
+                  onChange={e => setNewRule({ ...newRule, actions: [e.target.value] })}
                   placeholder="e.g., sync-to:notion"
                   className="w-full px-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
@@ -142,10 +146,10 @@ export function RulesPage() {
                   <h3 className="font-medium">{rule.name}</h3>
                   <div className="text-sm text-muted-foreground mt-1 space-x-4">
                     <span>
-                      <strong>If:</strong> {rule.condition}
+                      <strong>When:</strong> {rule.trigger}
                     </span>
                     <span>
-                      <strong>Then:</strong> {rule.action}
+                      <strong>Do:</strong> {rule.actions.join(', ')}
                     </span>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Clock, CheckCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface SyncStatusData {

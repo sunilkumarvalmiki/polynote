@@ -2,6 +2,30 @@ import { useQuery } from '@tanstack/react-query';
 import { FileText, Database, GitBranch, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+interface Note {
+  id: string;
+  title: string;
+  content: string;
+  tags?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Rule {
+  id: string;
+  name: string;
+  trigger: string;
+  actions: string[];
+  enabled: boolean;
+}
+
+interface SyncStatus {
+  isActive: boolean;
+  lastSync?: string;
+  connectorId?: string;
+  progress?: number;
+}
+
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -33,23 +57,35 @@ function StatCard({ title, value, icon, trend, link }: StatCardProps) {
 }
 
 export function Dashboard() {
-  const { data: notes = [] } = useQuery({
+  const { data: notes = [] } = useQuery<Note[]>({
     queryKey: ['notes'],
-    queryFn: () => window.electronAPI?.getNotes() || Promise.resolve([]),
+    queryFn: async () => {
+      const api = window.electronAPI;
+      if (!api) return [];
+      return await api.getNotes();
+    },
   });
 
-  const { data: rules = [] } = useQuery({
+  const { data: rules = [] } = useQuery<Rule[]>({
     queryKey: ['rules'],
-    queryFn: () => window.electronAPI?.getRules() || Promise.resolve([]),
+    queryFn: async () => {
+      const api = window.electronAPI;
+      if (!api) return [];
+      return await api.getRules();
+    },
   });
 
-  const { data: syncStatus } = useQuery({
+  const { data: syncStatus } = useQuery<SyncStatus | null>({
     queryKey: ['syncStatus'],
-    queryFn: () => window.electronAPI?.getSyncStatus() || Promise.resolve(null),
+    queryFn: async () => {
+      const api = window.electronAPI;
+      if (!api) return null;
+      return await api.getSyncStatus();
+    },
     refetchInterval: 5000,
   });
 
-  const enabledConnectors = syncStatus?.connectors.filter((c: any) => c.enabled).length || 0;
+  const isSyncing = syncStatus?.isActive ?? false;
 
   return (
     <div className="h-full overflow-auto">
@@ -72,8 +108,8 @@ export function Dashboard() {
             link="/notes"
           />
           <StatCard
-            title="Active Connectors"
-            value={enabledConnectors}
+            title="Sync Status"
+            value={isSyncing ? 'Syncing' : 'Idle'}
             icon={<Database size={24} />}
             link="/settings"
           />
@@ -106,14 +142,14 @@ export function Dashboard() {
             </div>
           ) : (
             <div className="space-y-2">
-              {notes.slice(0, 5).map((note: any) => (
+              {notes.slice(0, 5).map((note: Note) => (
                 <Link
                   key={note.id}
                   to={`/notes/${note.id}`}
                   className="block p-4 rounded-lg hover:bg-muted transition-colors"
                 >
                   <h3 className="font-medium">{note.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{note.body}</p>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{note.content}</p>
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                     <span>{new Date(note.updatedAt).toLocaleDateString()}</span>
                     {note.tags && note.tags.length > 0 && (
