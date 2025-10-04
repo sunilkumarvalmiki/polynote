@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer';
+
 import { CryptographyKey } from 'sodium-plus';
 
 /**

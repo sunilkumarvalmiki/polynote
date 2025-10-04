@@ -43,11 +43,11 @@ function createWindow(): void {
   // Load the app
   if (isDevelopment) {
     // Development mode: Load from Vite dev server
-    mainWindow.loadURL('http://localhost:5173');
+    void mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
     // Production mode: Load from built files
-    mainWindow.loadURL(
+    void mainWindow.loadURL(
       url.format({
         pathname: path.join(__dirname, '../renderer/index.html'),
         protocol: 'file:',
@@ -63,7 +63,7 @@ function createWindow(): void {
 }
 
 // App lifecycle events
-app.whenReady().then(() => {
+void app.whenReady().then(() => {
   // Register IPC handlers
   registerIpcHandlers();
 
