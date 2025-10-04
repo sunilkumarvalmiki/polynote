@@ -98,9 +98,11 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('notes:create', (_, note: Partial<Note>) => {
     try {
       // TODO: Replace with actual backend call
-      const newNote = {
+      const newNote: Note = {
         id: `note-${Date.now()}`,
-        ...note,
+        title: note.title || '',
+        body: note.body || '',
+        tags: note.tags || [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

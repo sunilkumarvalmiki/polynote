@@ -217,6 +217,7 @@ export class SyncQueue {
   /**
    * Get next task from queue (highest priority)
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private dequeue(): SyncTask | undefined {
     return this.queue.shift();
   }

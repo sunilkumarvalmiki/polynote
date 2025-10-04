@@ -185,6 +185,9 @@ importers:
       '@types/turndown':
         specifier: ^5.0.5
         version: 5.0.5
+      '@types/uuid':
+        specifier: ^9.0.8
+        version: 9.0.8
       '@vitest/coverage-v8':
         specifier: ^1.6.1
         version: 1.6.1(vitest@1.6.1(@types/node@24.6.2))
