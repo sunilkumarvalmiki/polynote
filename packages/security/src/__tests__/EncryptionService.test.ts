@@ -3,6 +3,8 @@
  */
 
 import { promises as fs } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 import { describe, it, expect, beforeEach } from 'vitest';
 
@@ -150,7 +152,7 @@ console.log('Hello');
   });
 
   describe('file encryption/decryption', () => {
-    const testFilePath = '/tmp/test-encrypt-file.txt';
+    const testFilePath = join(tmpdir(), 'test-encrypt-file.txt');
     const testContent = 'Test file content for encryption';
 
     beforeEach(async () => {
