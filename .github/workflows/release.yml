@@ -63,14 +63,11 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            artifact_name: PolyNote-Linux
-            asset_name: polynote-linux-x64.AppImage
+            platform: linux
           - os: macos-latest
-            artifact_name: PolyNote-macOS
-            asset_name: polynote-macos-universal.dmg
+            platform: mac
           - os: windows-latest
-            artifact_name: PolyNote-Windows
-            asset_name: polynote-windows-x64.exe
+            platform: win
 
     steps:
       - name: Checkout code
@@ -108,12 +105,20 @@ jobs:
         run: |
           pnpm --filter @polynote/desktop run package:win
 
-      - name: Upload Release Asset
+      - name: Upload Release Assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ github.ref_name }}
+        shell: bash
         run: |
-          gh release upload "$TAG_NAME" ./apps/desktop/dist/${{ matrix.asset_name }} --repo="${GITHUB_REPOSITORY}"
+          cd apps/desktop/dist
+          # Upload all distributable files (not unpacked directories)
+          for file in *.{AppImage,deb,rpm,dmg,zip,exe,msi}; do
+            if [ -f "$file" ]; then
+              echo "Uploading $file..."
+              gh release upload "$TAG_NAME" "$file" --repo="${GITHUB_REPOSITORY}" --clobber
+            fi
+          done
 
   # publish-npm:
   #   name: Publish to npm
