@@ -14,7 +14,7 @@ Before starting, make sure you have:
 
 ### Step 1: Download PolyNote
 
-Visit our [releases page](https://github.com/yourusername/polynote/releases) and download the installer for your operating system:
+Visit our [releases page](https://github.com/polynote/polynote/releases) and download the installer for your operating system:
 
 - **Windows**: Download `polynote-windows-x64.exe`
 - **macOS**: Download `polynote-macos-universal.dmg`
