@@ -1,219 +1,149 @@
-name: Release & Package
+name: Release & Publish
 
 on:
   push:
     tags:
       - 'v*.*.*'
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g., 1.0.0)'
-        required: true
-        type: string
-
-env:
-  NODE_VERSION: '22'
 
 jobs:
   create-release:
-    name: Create Release
+    name: Create GitHub Release
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
-      version: ${{ steps.get_version.outputs.version }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Get version
-        id: get_version
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-          fi
-
       - name: Generate changelog
         id: changelog
         run: |
-          if [ -f CHANGELOG.md ]; then
-            # Extract changelog for this version
-            sed -n "/## \[${{ steps.get_version.outputs.version }}\]/,/## \[/p" CHANGELOG.md | sed '$d' > release_notes.md
+          # Get the previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          # Generate changelog between tags
+          if [ -z "$PREVIOUS_TAG" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" HEAD)
           else
-            echo "Release ${{ steps.get_version.outputs.version }}" > release_notes.md
-            git log --pretty=format:"- %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> release_notes.md
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..HEAD)
           fi
+          
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v2
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          name: PolyNote v${{ steps.get_version.outputs.version }}
-          body_path: release_notes.md
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            ## What's Changed
+            ${{ steps.changelog.outputs.CHANGELOG }}
+            
+            ## Installation
+            Download the appropriate installer for your platform below.
+            
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ github.ref }}...main
           draft: false
           prerelease: false
+
+  build-and-release:
+    name: Build & Upload (${{ matrix.os }})
+    needs: create-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: PolyNote-Linux
+            asset_name: polynote-linux-x64.AppImage
+          - os: macos-latest
+            artifact_name: PolyNote-macOS
+            asset_name: polynote-macos-universal.dmg
+          - os: windows-latest
+            artifact_name: PolyNote-Windows
+            asset_name: polynote-windows-x64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+
+      - name: Package application (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          pnpm --filter @polynote/desktop run package:linux
+
+      - name: Package application (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          pnpm --filter @polynote/desktop run package:mac
+
+      - name: Package application (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          pnpm --filter @polynote/desktop run package:win
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./apps/desktop/dist/${{ matrix.asset_name }}
+          asset_name: ${{ matrix.asset_name }}
+          asset_content_type: application/octet-stream
 
-  build-linux:
-    name: Build Linux
+  publish-npm:
+    name: Publish to npm
     needs: create-release
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
+    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Rebuild native modules
-        run: npm rebuild better-sqlite3 --build-from-source
-
-      - name: Build application
-        run: npm run build
-
-      - name: Package Linux (AppImage)
-        run: |
-          cd apps/desktop
-          npx electron-builder --linux AppImage --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Package Linux (DEB)
-        run: |
-          cd apps/desktop
-          npx electron-builder --linux deb --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Package Linux (RPM)
-        run: |
-          cd apps/desktop
-          npx electron-builder --linux rpm --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Linux artifacts
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ needs.create-release.outputs.version }}
-          files: |
-            apps/desktop/dist/*.AppImage
-            apps/desktop/dist/*.deb
-            apps/desktop/dist/*.rpm
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-macos:
-    name: Build macOS
-    needs: create-release
-    runs-on: macos-latest
-    timeout-minutes: 30
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          node-version: '22'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: Rebuild native modules
-        run: npm rebuild better-sqlite3 --build-from-source
+      - name: Build packages
+        run: pnpm build
 
-      - name: Build application
-        run: npm run build
-
-      - name: Package macOS (DMG)
-        run: |
-          cd apps/desktop
-          npx electron-builder --mac dmg --publish never
+      - name: Publish to npm
+        run: pnpm publish -r --access public --no-git-checks
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # CSC_LINK: ${{ secrets.MAC_CERT_P12_BASE64 }}
-          # CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
-
-      - name: Package macOS (ZIP for auto-update)
-        run: |
-          cd apps/desktop
-          npx electron-builder --mac zip --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload macOS artifacts
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ needs.create-release.outputs.version }}
-          files: |
-            apps/desktop/dist/*.dmg
-            apps/desktop/dist/*.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-windows:
-    name: Build Windows
-    needs: create-release
-    runs-on: windows-latest
-    timeout-minutes: 30
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Rebuild native modules
-        run: npm rebuild better-sqlite3 --build-from-source
-
-      - name: Build application
-        run: npm run build
-
-      - name: Package Windows (NSIS)
-        run: |
-          cd apps/desktop
-          npx electron-builder --win nsis --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # CSC_LINK: ${{ secrets.WIN_CERT_P12_BASE64 }}
-          # CSC_KEY_PASSWORD: ${{ secrets.WIN_CERT_PASSWORD }}
-
-      - name: Package Windows (Portable)
-        run: |
-          cd apps/desktop
-          npx electron-builder --win portable --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Windows artifacts
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ needs.create-release.outputs.version }}
-          files: |
-            apps/desktop/dist/*.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

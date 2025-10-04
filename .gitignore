@@ -57,3 +57,21 @@ pnpm-debug.log*
 # Electron
 out/
 release/
+
+# Internal planning & AI-generated docs (not for GitHub)
+*.md
+!README.md
+!CHANGELOG.md
+!CONTRIBUTING.md
+!CODE_OF_CONDUCT.md
+!LICENSE.md
+docs/*.md
+!docs/README.md
+!docs/getting-started.md
+!docs/architecture.md
+!docs/api-reference.md
+
+# Temporary files
+*.tmp
+*.temp
+*~

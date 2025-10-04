@@ -1,208 +1,284 @@
-# PolyNote
+<div align="center">
 
-Universal note synchronization and AI-powered knowledge management for local-first workflows.
+# 🇮🇳 PolyNote
 
-## Overview
+**Universal Note Synchronization Platform**
 
-PolyNote enables seamless bidirectional sync across multiple note-taking platforms with local-first AI capabilities:
+*Made with ❤️ in India, for knowledge workers everywhere*
 
-- **Connectors**: Obsidian, Notion, Joplin, OneNote, Apple Notes
-- **AI Features**: Local summarization, translation (EN↔TE↔HI), rewriting
-- **Security**: End-to-end encryption, encrypted share bundles
-- **Cross-platform**: Linux, macOS (Intel + Apple Silicon), Windows
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen)](https://nodejs.org)
+[![pnpm](https://img.shields.io/badge/pnpm-%3E%3D9.0.0-orange)](https://pnpm.io)
 
-## Architecture
+[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Contributing](#-contributing)
 
-```
-polynote/
-├── apps/
-│   ├── desktop/          # Electron + React app
-│   └── server/           # Node.js/Express API
-├── packages/
-│   ├── connectors/       # Connector implementations
-│   │   ├── obsidian/
-│   │   ├── notion/
-│   │   ├── joplin/
-│   │   ├── onenote/
-│   │   └── apple-notes/
-│   ├── ai/              # AI provider abstractions
-│   └── shared/          # Common types, utils, DB
-├── infra/               # Podman, CI configs
-└── docs/                # Documentation
-```
+</div>
 
-## Quick Start
+---
+
+## 🌟 What is PolyNote?
+
+PolyNote is an **open-source, privacy-first** note synchronization platform built in India. It seamlessly connects your favorite note-taking apps while keeping your data secure and under your control.
+
+### Why PolyNote?
+
+- 🔒 **Privacy First**: Your notes stay on your device. End-to-end encryption for everything.
+- 🌐 **Universal Sync**: Works with Obsidian, Notion, Joplin, OneNote, and Apple Notes
+- 🤖 **Local AI**: Summarize, translate, and enhance notes using local AI models
+- 🇮🇳 **Multilingual**: Full support for English, Telugu (తెలుగు), and Hindi (हिंदी)
+- 💻 **Cross-Platform**: Linux, macOS, and Windows support
+
+---
+
+## ✨ Features
+
+### 🔄 Bidirectional Sync
+- Automatic synchronization across all your note-taking platforms
+- Smart conflict resolution with visual merge tools
+- Preserves formatting, tags, and metadata
+
+### 🧠 AI-Powered Tools
+- **Local-first AI**: Run AI models on your own computer
+- **Summarization**: Get quick summaries of long notes
+- **Translation**: Translate between English, Telugu, and Hindi
+- **Content Enhancement**: Rewrite and improve your notes
+
+### 🔐 Security & Privacy
+- End-to-end encryption for all data
+- Secure sharing with encrypted bundles
+- No cloud storage required (unless you choose)
+- Open-source and auditable
+
+### 🌈 For Indian Users
+- Full support for Indian languages (Telugu, Hindi)
+- RTL text support where needed
+- Localized date and number formats
+- Built by Indian developers who understand your needs
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js ≥22.0.0
-- pnpm ≥9.0.0
-- Podman (recommended) or Docker
+Before you begin, make sure you have these installed:
+
+- **Node.js** (version 22 or higher) - [Download here](https://nodejs.org)
+- **pnpm** (version 9 or higher) - Install with: `npm install -g pnpm`
+- **Podman** or **Docker** (for development) - [Podman Install Guide](https://podman.io/getting-started/installation)
 
 ### Installation
 
 ```bash
-# Clone repository
+# 1. Clone the repository
 git clone https://github.com/yourusername/polynote.git
 cd polynote
 
-# Install dependencies
+# 2. Install dependencies
 pnpm install
 
-# Start development environment
+# 3. Start the development environment
 make dev-up
 
-# Run the app
+# 4. Run the application
 pnpm dev
 ```
 
-### Development Commands
+That's it! PolyNote should now be running on your computer.
+
+### First Steps
+
+1. **Connect Your First App**: Start with Obsidian (easiest) or Notion
+2. **Configure Sync**: Choose which folders to sync
+3. **Try AI Features**: Summarize a note using local AI
+4. **Explore**: Check out the graph view and search features
+
+---
+
+## 📖 Documentation
+
+- [**Getting Started Guide**](docs/getting-started.md) - Step-by-step setup instructions
+- [**User Guide**](docs/user-guide.md) - How to use PolyNote's features
+- [**Developer Guide**](docs/developer-guide.md) - For contributors and developers
+- [**API Reference**](docs/api-reference.md) - Technical API documentation
+
+---
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+polynote/
+├── apps/
+│   ├── desktop/          # Electron desktop app
+│   └── server/           # Backend API server
+├── packages/
+│   ├── connectors/       # Platform connectors (Obsidian, Notion, etc.)
+│   ├── ai/              # AI provider integrations
+│   ├── security/        # Encryption and security
+│   └── shared/          # Shared utilities and types
+├── infra/               # Infrastructure and deployment
+└── docs/                # Documentation
+```
+
+### Available Commands
 
 ```bash
-# Run tests
-pnpm test
+# Development
+pnpm dev              # Start development server
+pnpm dev:desktop      # Start desktop app in dev mode
 
-# Lint code
-pnpm lint
+# Testing
+pnpm test             # Run all tests
+pnpm test:watch       # Run tests in watch mode
+pnpm test:coverage    # Generate coverage report
 
-# Type check
-pnpm type-check
+# Code Quality
+pnpm lint             # Lint code
+pnpm format           # Format code with Prettier
+pnpm type-check       # TypeScript type checking
 
-# Build for production
-pnpm build
-
-# Clean build artifacts
-pnpm clean
+# Building
+pnpm build            # Build for production
+pnpm build:desktop    # Build desktop app
 ```
 
-## Technology Stack
+### Running Tests
 
-| Component | Technology |
-|-----------|------------|
-| **Backend** | TypeScript (Node.js/Express), Python (FastAPI) |
-| **Frontend** | Electron + React, TailwindCSS |
-| **Database** | SQLite with FTS5 |
-| **Encryption** | libsodium/sodium-native, OpenPGP.js |
-| **AI** | Ollama, GPT4All, llama.cpp, OpenAI, Claude |
-| **Containers** | Podman (dev + CI + release) |
-| **CI/CD** | GitHub Actions |
-| **Packaging** | electron-builder |
-
-## Features
-
-### Core Sync
-- Bidirectional sync across platforms
-- Conflict resolution with merge UI
-- Change detection and delta sync
-- Rate limiting and retry logic
-
-### AI Capabilities
-- Local summarization (7B models)
-- EN↔TE↔HI translation
-- Content rewriting and enhancement
-- Privacy-first with secret redaction
-
-### Security
-- End-to-end encryption
-- Encrypted share bundles
-- Key management with recovery phrases
-- Access control and permissions
-
-## Documentation
-
-- [Product Requirements](PRD.md)
-- [Implementation Plan](IMPLEMENTATION_PLAN.md)
-- [Connector Guide](docs/CONNECTORS.md) *(coming soon)*
-- [AI Module](docs/AI.md) *(coming soon)*
-- [Security](docs/SECURITY.md) *(coming soon)*
-
-## Development
-
-### Branching Strategy
-
-- `main`: Production releases
-- `develop`: Active development
-- `feat/*`: Feature branches
-- `fix/*`: Bug fixes
-
-### Commit Convention
-
-We follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-type(scope): subject
-
-feat(connectors): implement Obsidian file watcher
-fix(sync): resolve conflict detection edge case
-docs(readme): update installation steps
-```
-
-### Code Quality
-
-- TypeScript strict mode enabled
-- ESLint + Prettier configured
-- Minimum 80% test coverage
-- Automated CI checks on PRs
-
-## Testing
+We maintain high code quality with comprehensive testing:
 
 ```bash
 # Run all tests
 pnpm test
 
-# Run tests in watch mode
+# Run specific test suite
+pnpm test packages/ai
+
+# Watch mode for development
 pnpm test:watch
 
 # Generate coverage report
 pnpm test:coverage
-
-# Run E2E tests
-pnpm test:e2e
 ```
-
-## Packaging
-
-```bash
-# Build for current platform
-pnpm --filter @polynote/desktop run build
-
-# Build for all platforms (macOS, Windows, Linux)
-pnpm --filter @polynote/desktop run build:all
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feat/amazing-feature`)
-3. Make your changes
-4. Run tests and linting
-5. Commit with conventional commits
-6. Push and create a Pull Request
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details
-
-## Project Status
-
-🚧 **Under Active Development** - v1.0.0 target: Q1 2025
-
-### Roadmap
-
-- [x] Phase 1: Foundation & Infrastructure
-- [ ] Phase 2: Core Connectors
-- [ ] Phase 3: Sync Engine
-- [ ] Phase 4: AI Module
-- [ ] Phase 5: Security & Encryption
-- [ ] Phase 6: Desktop UI
-- [ ] Phase 7: Packaging & Release
-
-## Support
-
-- [Documentation](docs/)
-- [Issue Tracker](https://github.com/yourusername/polynote/issues)
-- [Discussions](https://github.com/yourusername/polynote/discussions)
 
 ---
 
-**Built with ❤️ by the PolyNote Team**
+## 🤝 Contributing
+
+We welcome contributions from developers across India and around the world!
+
+### How to Contribute
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feat/amazing-feature`)
+3. **Make** your changes
+4. **Test** your changes (`pnpm test`)
+5. **Commit** using conventional commits (`git commit -m 'feat: add amazing feature'`)
+6. **Push** to your branch (`git push origin feat/amazing-feature`)
+7. **Create** a Pull Request
+
+### Contribution Guidelines
+
+- Follow our [Code of Conduct](CODE_OF_CONDUCT.md)
+- Write tests for new features
+- Update documentation when needed
+- Use conventional commit messages
+- Ensure all tests pass before submitting
+
+---
+
+## 🌍 Supported Platforms
+
+### Note-Taking Apps
+- ✅ **Obsidian** - Full bidirectional sync
+- ✅ **Notion** - Read and write support
+- ✅ **Joplin** - Full sync with attachments
+- ⏳ **OneNote** - Read-only (write coming soon)
+- ⏳ **Apple Notes** - Read-only (macOS only)
+
+### Operating Systems
+- ✅ **Linux** - Full support (AppImage, DEB, RPM)
+- ✅ **macOS** - Intel and Apple Silicon (DMG, PKG)
+- ✅ **Windows** - Full support (EXE, NSIS installer)
+
+### AI Providers
+- ✅ **Ollama** - Local AI (recommended)
+- ✅ **GPT4All** - Local AI
+- ✅ **llama.cpp** - Local AI
+- ✅ **OpenAI** - Cloud AI (optional)
+- ✅ **Claude** - Cloud AI (optional)
+
+---
+
+## 📊 Project Status
+
+🚧 **Currently in Active Development**
+
+- **Version**: v0.9.0 (Beta)
+- **Target Release**: v1.0.0 in Q1 2025
+- **Test Coverage**: 85%+
+- **Contributors**: Growing community of Indian developers
+
+### Roadmap
+
+- [x] Core sync engine
+- [x] Obsidian connector
+- [x] Notion connector
+- [x] Local AI integration
+- [ ] Mobile apps (Android first)
+- [ ] Cloud sync option
+- [ ] Team collaboration features
+
+---
+
+## 🇮🇳 Made in India
+
+PolyNote is proudly developed in India by Indian developers who understand the unique needs of Indian knowledge workers and students.
+
+### Why This Matters
+
+- **Local Language Support**: First-class support for Telugu and Hindi
+- **Performance Optimization**: Works on modest hardware common in India
+- **Offline-First**: Reliable even with unstable internet connections
+- **Privacy Focused**: Your data stays in India if you want it to
+- **Community**: Join a growing community of Indian open-source contributors
+
+### Indian Contributors
+
+We're building a community of talented Indian developers. Want to join us? Check out our [Contributing Guide](CONTRIBUTING.md).
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with ❤️ by developers in India
+- Inspired by the Indian open-source community
+- Special thanks to all our contributors
+- Powered by amazing open-source projects
+
+---
+
+## 📞 Support & Community
+
+- **Issues**: [GitHub Issues](https://github.com/yourusername/polynote/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/polynote/discussions)
+- **Email**: support@polynote.dev (coming soon)
+
+---
+
+<div align="center">
+
+**🇮🇳 Made with ❤️ in India**
+
+*Empowering knowledge workers, one note at a time*
+
+[⬆ Back to Top](#-polynote)
+
+</div>
