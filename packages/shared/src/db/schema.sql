@@ -15,26 +15,24 @@ CREATE TABLE IF NOT EXISTS Note (
   UNIQUE(source_connector, source_id)
 );
 
--- Full-text search index
+-- Full-text search index (standalone FTS5 table)
 CREATE VIRTUAL TABLE IF NOT EXISTS NoteSearch USING fts5(
   note_id UNINDEXED,
   title,
-  body,
-  content='Note',
-  content_rowid='rowid'
+  body
 );
 
--- Triggers to keep FTS5 in sync
+-- Triggers to keep FTS5 in sync with Note table
 CREATE TRIGGER IF NOT EXISTS note_ai AFTER INSERT ON Note BEGIN
   INSERT INTO NoteSearch(note_id, title, body) VALUES (new.id, new.title, new.body);
 END;
 
 CREATE TRIGGER IF NOT EXISTS note_ad AFTER DELETE ON Note BEGIN
-  DELETE FROM NoteSearch WHERE note_id = old.id;
+  DELETE FROM NoteSearch WHERE rowid IN (SELECT rowid FROM NoteSearch WHERE note_id = old.id);
 END;
 
 CREATE TRIGGER IF NOT EXISTS note_au AFTER UPDATE ON Note BEGIN
-  DELETE FROM NoteSearch WHERE note_id = old.id;
+  DELETE FROM NoteSearch WHERE rowid IN (SELECT rowid FROM NoteSearch WHERE note_id = old.id);
   INSERT INTO NoteSearch(note_id, title, body) VALUES (new.id, new.title, new.body);
 END;
 

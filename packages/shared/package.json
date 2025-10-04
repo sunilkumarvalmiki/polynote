@@ -8,7 +8,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "vitest",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
     "migrate": "node dist/db/migrate.js",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/uuid": "^9.0.8",
+    "@vitest/coverage-v8": "^1.6.1",
     "typescript": "^5.4.0",
     "vitest": "^1.6.1"
   }
