@@ -34,16 +34,16 @@ export class ObsidianConnector extends BaseConnector {
     this.watcher = watch(this.config.vaultPath, {
       persistent: true,
       ignoreInitial: false,
-      ignored: /(^|[\/\\])\../, // ignore dotfiles
+      ignored: /(^|[/\\])\../, // ignore dotfiles
       awaitWriteFinish: {
         stabilityThreshold: 2000,
         pollInterval: 100,
       },
     });
 
-    this.watcher.on('add', path => this.handleFileChange(path));
-    this.watcher.on('change', path => this.handleFileChange(path));
-    this.watcher.on('unlink', path => this.handleFileDelete(path));
+    this.watcher.on('add', path => void this.handleFileChange(path));
+    this.watcher.on('change', path => void this.handleFileChange(path));
+    this.watcher.on('unlink', path => void this.handleFileDelete(path));
   }
 
   async authenticate(): Promise<void> {
@@ -122,11 +122,12 @@ export class ObsidianConnector extends BaseConnector {
     }
   }
 
-  private async parseMarkdownFile(filePath: string): Promise<Note | null> {
+  private parseMarkdownFile(filePath: string): Note | null {
     try {
       const content = readFileSync(filePath, 'utf-8');
       const { data: frontmatter, content: body } = matter(content);
 
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
       const stats = require('node:fs').statSync(filePath);
       const id = frontmatter.id || basename(filePath, extname(filePath));
 

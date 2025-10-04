@@ -298,7 +298,7 @@ export class NotionConnector extends BaseConnector {
         case 'numbered_list_item':
           lines.push(`1. ${this.richTextToMarkdown(block.numbered_list_item?.rich_text || [])}`);
           break;
-        case 'code':
+        case 'code': {
           const language = block.code?.language || '';
           const code = this.richTextToMarkdown(block.code?.rich_text || []);
           lines.push(`\`\`\`${language}`);
@@ -306,6 +306,7 @@ export class NotionConnector extends BaseConnector {
           lines.push('```');
           lines.push('');
           break;
+        }
         case 'quote':
           lines.push(`> ${this.richTextToMarkdown(block.quote?.rich_text || [])}`);
           lines.push('');
