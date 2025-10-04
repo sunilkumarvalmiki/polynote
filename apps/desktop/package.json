@@ -162,11 +162,6 @@
       "executableName": "polynote",
       "synopsis": "Universal note sync and AI-powered knowledge management",
       "description": "PolyNote enables bidirectional sync between Obsidian, Notion, Joplin, OneNote, and Apple Notes with AI-powered features."
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "polynote",
-      "repo": "polynote"
     }
   }
 }
