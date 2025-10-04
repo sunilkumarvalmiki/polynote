@@ -1,0 +1,38 @@
+# PolyNote Development Environment
+version: '3.8'
+
+services:
+  polynote-dev:
+    build:
+      context: ..
+      dockerfile: ./infra/Containerfile
+    container_name: polynote-dev
+    volumes:
+      - ..:/workspace:cached
+      - polynote-node-modules:/workspace/node_modules
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+    networks:
+      - polynote-net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: polynote-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - polynote-net
+
+volumes:
+  polynote-node-modules:
+  ollama-data:
+
+networks:
+  polynote-net:
+    driver: bridge

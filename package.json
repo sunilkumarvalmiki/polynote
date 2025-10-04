@@ -1,0 +1,38 @@
+{
+  "name": "polynote",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PolyNote - Universal note sync and AI-powered knowledge management",
+  "author": "PolyNote Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter @polynote/server dev & pnpm --filter @polynote/desktop dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "eslint . --ext .ts,.tsx",
+    "type-check": "pnpm -r type-check",
+    "clean": "pnpm -r clean && rm -rf node_modules",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "husky": "^9.0.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.0"
+  }
+}
