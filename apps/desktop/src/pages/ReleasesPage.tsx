@@ -14,13 +14,16 @@ interface PlatformDownload {
   notes?: string;
 }
 
+const REPO_BASE = 'https://github.com/sunilkumarvalmiki/polynote';
+const LATEST_RELEASE_BASE = `${REPO_BASE}/releases/latest/download`;
+
 const downloadOptions: PlatformDownload[] = [
   {
     platform: 'Windows',
     description: '64-bit installer for Windows 10 and newer',
     primary: {
       label: 'Download .exe',
-      url: 'https://github.com/polynote/polynote/releases/latest/download/polynote-windows-x64.exe',
+      url: `${LATEST_RELEASE_BASE}/polynote-windows-x64.exe`,
     },
     notes: 'Installer bundles the required runtime. Run the installer with administrator rights if you want shell integration.',
   },
@@ -29,7 +32,7 @@ const downloadOptions: PlatformDownload[] = [
     description: 'Universal build for Apple Silicon and Intel Macs (macOS 12+)',
     primary: {
       label: 'Download .dmg',
-      url: 'https://github.com/polynote/polynote/releases/latest/download/polynote-macos-universal.dmg',
+      url: `${LATEST_RELEASE_BASE}/polynote-macos-universal.dmg`,
     },
     notes: 'Open the DMG and drag PolyNote to Applications. Gatekeeper may prompt for confirmation on the first launch.',
   },
@@ -38,11 +41,11 @@ const downloadOptions: PlatformDownload[] = [
     description: 'Desktop builds tested on Ubuntu 22.04 and Fedora 39',
     primary: {
       label: 'Download AppImage',
-      url: 'https://github.com/polynote/polynote/releases/latest/download/polynote-linux-x64.AppImage',
+      url: `${LATEST_RELEASE_BASE}/polynote-linux-x64.AppImage`,
     },
     secondary: {
       label: 'Debian package',
-      url: 'https://github.com/polynote/polynote/releases/latest/download/polynote-linux-x64.deb',
+      url: `${LATEST_RELEASE_BASE}/polynote-linux-x64.deb`,
     },
     notes: 'Make the AppImage executable with chmod +x before launching. Use the DEB for Debian-based distributions.',
   },
@@ -127,7 +130,7 @@ shasum -a 256 polynote-linux-x64.AppImage`}
             <ul className="space-y-2 text-sm text-primary">
               <li>
                 <a
-                  href="https://github.com/polynote/polynote/releases"
+                  href={`${REPO_BASE}/releases`}
                   target="_blank"
                   rel="noreferrer"
                   className="hover:underline"
@@ -137,7 +140,7 @@ shasum -a 256 polynote-linux-x64.AppImage`}
               </li>
               <li>
                 <a
-                  href="https://github.com/polynote/polynote/issues/new/choose"
+                  href={`${REPO_BASE}/issues/new/choose`}
                   target="_blank"
                   rel="noreferrer"
                   className="hover:underline"

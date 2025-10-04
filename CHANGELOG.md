@@ -206,20 +206,20 @@ This is the initial release. To install:
 
 #### AppImage (Universal)
 ```bash
-wget https://github.com/polynote/polynote/releases/download/v1.0.0/PolyNote-1.0.0.AppImage
+wget https://github.com/sunilkumarvalmiki/polynote/releases/download/v1.0.0/PolyNote-1.0.0.AppImage
 chmod +x PolyNote-1.0.0.AppImage
 ./PolyNote-1.0.0.AppImage
 ```
 
 #### Debian/Ubuntu
 ```bash
-wget https://github.com/polynote/polynote/releases/download/v1.0.0/polynote_1.0.0_amd64.deb
+wget https://github.com/sunilkumarvalmiki/polynote/releases/download/v1.0.0/polynote_1.0.0_amd64.deb
 sudo dpkg -i polynote_1.0.0_amd64.deb
 ```
 
 #### Fedora/RHEL
 ```bash
-wget https://github.com/polynote/polynote/releases/download/v1.0.0/polynote-1.0.0.x86_64.rpm
+wget https://github.com/sunilkumarvalmiki/polynote/releases/download/v1.0.0/polynote-1.0.0.x86_64.rpm
 sudo rpm -i polynote-1.0.0.x86_64.rpm
 ```
 
@@ -232,4 +232,4 @@ For detailed changes by phase, see:
 - [Phase 5 Completion Report](docs/phase5-completion.md)
 - [Phase 6 Completion Report](docs/phase6-completion.md)
 
-[1.0.0]: https://github.com/polynote/polynote/releases/tag/v1.0.0
+[1.0.0]: https://github.com/sunilkumarvalmiki/polynote/releases/tag/v1.0.0

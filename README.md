@@ -71,7 +71,7 @@ Before you begin, make sure you have these installed:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/polynote.git
+git clone https://github.com/sunilkumarvalmiki/polynote.git
 cd polynote
 
 # 2. Install dependencies
@@ -267,8 +267,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support & Community
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/polynote/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/polynote/discussions)
+- **Issues**: [GitHub Issues](https://github.com/sunilkumarvalmiki/polynote/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/sunilkumarvalmiki/polynote/discussions)
 - **Email**: support@polynote.dev (coming soon)
 
 ---

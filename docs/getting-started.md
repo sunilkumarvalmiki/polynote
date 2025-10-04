@@ -14,11 +14,11 @@ Before starting, make sure you have:
 
 ### Step 1: Download PolyNote
 
-Visit our [releases page](https://github.com/polynote/polynote/releases/latest) or grab the installer directly below. You can also open **Releases** from the PolyNote sidebar once the app is installed to access these links anytime.
+Visit our [releases page](https://github.com/sunilkumarvalmiki/polynote/releases/latest) or grab the installer directly below. You can also open **Releases** from the PolyNote sidebar once the app is installed to access these links anytime.
 
-- **Windows**: [Installer (.exe)](https://github.com/polynote/polynote/releases/latest/download/polynote-windows-x64.exe)
-- **macOS**: [Disk image (.dmg)](https://github.com/polynote/polynote/releases/latest/download/polynote-macos-universal.dmg)
-- **Linux**: [AppImage](https://github.com/polynote/polynote/releases/latest/download/polynote-linux-x64.AppImage) or [Debian package](https://github.com/polynote/polynote/releases/latest/download/polynote-linux-x64.deb)
+- **Windows**: [Installer (.exe)](https://github.com/sunilkumarvalmiki/polynote/releases/latest/download/polynote-windows-x64.exe)
+- **macOS**: [Disk image (.dmg)](https://github.com/sunilkumarvalmiki/polynote/releases/latest/download/polynote-macos-universal.dmg)
+- **Linux**: [AppImage](https://github.com/sunilkumarvalmiki/polynote/releases/latest/download/polynote-linux-x64.AppImage) or [Debian package](https://github.com/sunilkumarvalmiki/polynote/releases/latest/download/polynote-linux-x64.deb)
 
 ### Step 2: Install
 
@@ -204,7 +204,7 @@ Now that you're set up, explore these features:
 
 - **Documentation**: Browse our [full documentation](./README.md)
 - **Community**: Join discussions on GitHub
-- **Issues**: Report bugs on [GitHub Issues](https://github.com/yourusername/polynote/issues)
+- **Issues**: Report bugs on [GitHub Issues](https://github.com/sunilkumarvalmiki/polynote/issues)
 
 ---
 
