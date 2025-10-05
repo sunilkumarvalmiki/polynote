@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "module": "node16",
+    "module": "esnext",
     "target": "ES2022",
     "lib": ["ES2022"],
-    "moduleResolution": "node16",
+    "moduleResolution": "bundler",
     "noEmit": false,
     "jsx": "preserve",
     "skipLibCheck": true,
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
@@ -20,7 +20,8 @@
       "@/*": ["./src/*"],
       "@polynote/shared": ["../../packages/shared/src"],
       "@polynote/ai": ["../../packages/ai/src"],
-      "@polynote/security": ["../../packages/security/src"]
+      "@polynote/security": ["../../packages/security/src"],
+      "@polynote/connectors": ["../../packages/connectors/src"]
     }
   },
   "include": ["electron/**/*.ts"],

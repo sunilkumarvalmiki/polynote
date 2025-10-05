@@ -2,7 +2,7 @@
   "name": "@polynote/desktop",
   "version": "1.0.0",
   "description": "PolyNote Desktop Application - Electron + React",
-  "main": "dist/main.js",
+  "main": "electron/main.ts",
   "author": "PolyNote Team",
   "license": "MIT",
   "private": true,
@@ -29,7 +29,10 @@
   "dependencies": {
     "@tanstack/react-query": "^5.61.5",
     "@tanstack/react-virtual": "^3.11.6",
+    "@vitejs/plugin-react": "^5.0.4",
     "clsx": "^2.1.1",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "lucide-react": "^0.475.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -39,6 +42,8 @@
     "remark-gfm": "^4.0.0",
     "vis-data": "^7.1.9",
     "vis-network": "^9.1.9",
+    "vite": "^7.1.9",
+    "wait-on": "^9.0.1",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
@@ -62,6 +67,7 @@
     },
     "files": [
       "dist/**/*",
+      "electron/**/*",
       "!dist/*.map"
     ],
     "extraResources": [
