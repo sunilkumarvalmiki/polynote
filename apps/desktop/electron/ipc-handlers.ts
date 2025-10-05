@@ -1252,4 +1252,141 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('system:get-version', () => {
     return app.getVersion();
   });
+
+  // ============================================================================
+  // Authentication API
+  // ============================================================================
+
+  // Note: Auth handler is initialized separately and accessed via global
+  ipcMain.handle('auth:login-google', async () => {
+    const logger = await getAuditLogger();
+    const EventType = getAuditEventType();
+
+    try {
+      checkRateLimit('auth:login-google');
+
+      // @ts-ignore - authHandler is set globally
+      if (!global.authHandler) {
+        throw new Error('Authentication not initialized');
+      }
+
+      // @ts-ignore
+      const session = await global.authHandler.initiateGoogleLogin();
+
+      await logger.log({
+        type: EventType.USER_LOGIN,
+        userId: session.userId,
+        details: { provider: 'google', email: session.email },
+      });
+
+      return {
+        success: true,
+        session: {
+          userId: session.userId,
+          email: session.email,
+          name: session.name,
+          picture: session.picture,
+          provider: session.provider,
+        },
+      };
+    } catch (error) {
+      await logger.log({
+        type: EventType.USER_LOGIN,
+        userId: null,
+        details: { error: (error as Error).message, provider: 'google' },
+      });
+
+      throw error;
+    }
+  });
+
+  ipcMain.handle('auth:logout', async (_event, userId: string) => {
+    const logger = await getAuditLogger();
+    const EventType = getAuditEventType();
+
+    try {
+      checkRateLimit('auth:logout');
+
+      // @ts-ignore - authHandler is set globally
+      if (!global.authHandler) {
+        throw new Error('Authentication not initialized');
+      }
+
+      // @ts-ignore
+      await global.authHandler.logout(userId);
+
+      await logger.log({
+        type: EventType.USER_LOGOUT,
+        userId,
+        details: {},
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('auth:get-current-session', async () => {
+    try {
+      // @ts-ignore - authHandler is set globally
+      if (!global.authHandler) {
+        return null;
+      }
+
+      // @ts-ignore
+      const session = await global.authHandler.getCurrentSession();
+
+      if (!session) {
+        return null;
+      }
+
+      return {
+        userId: session.userId,
+        email: session.email,
+        name: session.name,
+        picture: session.picture,
+        provider: session.provider,
+        expiresAt: session.expiresAt.toISOString(),
+      };
+    } catch (error) {
+      console.error('Get current session error:', error);
+      return null;
+    }
+  });
+
+  ipcMain.handle('auth:is-authenticated', async () => {
+    try {
+      // @ts-ignore - authHandler is set globally
+      if (!global.authHandler) {
+        return false;
+      }
+
+      // @ts-ignore
+      return await global.authHandler.isAuthenticated();
+    } catch (error) {
+      console.error('Is authenticated error:', error);
+      return false;
+    }
+  });
+
+  ipcMain.handle('auth:refresh-token', async (_event, userId: string) => {
+    try {
+      checkRateLimit('auth:refresh-token');
+
+      // @ts-ignore - authHandler is set globally
+      if (!global.authHandler) {
+        throw new Error('Authentication not initialized');
+      }
+
+      // @ts-ignore
+      await global.authHandler.refreshToken(userId);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Refresh token error:', error);
+      throw error;
+    }
+  });
 }

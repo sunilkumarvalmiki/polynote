@@ -65,14 +65,39 @@ function createWindow(): void {
 // App lifecycle events
 void app.whenReady().then(async () => {
   // Initialize database first using dynamic import for ES module
+  let db;
   try {
-    const { initializeDatabase } = await import('@polynote/shared');
+    const { initializeDatabase, getDatabase } = await import('@polynote/shared');
     initializeDatabase();
+    db = getDatabase();
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Failed to initialize database:', error);
     app.quit();
     return;
+  }
+
+  // Initialize authentication handler
+  try {
+    const { ElectronAuthHandler } = await import('./auth-handler');
+    const { EncryptionService, KeyManagementService } = await import('@polynote/security');
+
+    // Initialize KMS and encryption service
+    const kms = new KeyManagementService();
+    await kms.initialize({ passphrase: 'polynote-auth-key' }); // TODO: Use secure passphrase from config
+    const encryptionService = new EncryptionService(kms);
+
+    // Create auth handler
+    const authHandler = new ElectronAuthHandler(db, encryptionService);
+
+    // Store globally for IPC handlers
+    // @ts-ignore
+    global.authHandler = authHandler;
+
+    console.log('Authentication handler initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize authentication handler:', error);
+    // Continue without auth - it's not critical for app startup
   }
 
   // Register IPC handlers

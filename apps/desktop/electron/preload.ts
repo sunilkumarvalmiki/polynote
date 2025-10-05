@@ -62,6 +62,20 @@ interface Settings {
   [key: string]: unknown;
 }
 
+interface UserSession {
+  userId: string;
+  email: string;
+  name: string;
+  picture?: string;
+  provider: 'google';
+  expiresAt: string;
+}
+
+interface AuthResult {
+  success: boolean;
+  session?: UserSession;
+}
+
 interface ShareBundleOptions {
   includeAttachments?: boolean;
   expiresAt?: number;
@@ -147,6 +161,13 @@ export interface IElectronAPI {
   openExternal: (url: string) => Promise<void>;
   getAppVersion: () => Promise<string>;
   getAppPath: (name: string) => Promise<string>;
+
+  // Authentication API
+  loginWithGoogle: () => Promise<AuthResult>;
+  logout: (userId: string) => Promise<{ success: boolean }>;
+  getCurrentSession: () => Promise<UserSession | null>;
+  isAuthenticated: () => Promise<boolean>;
+  refreshToken: (userId: string) => Promise<{ success: boolean }>;
 }
 
 // Expose protected methods to renderer process
@@ -204,6 +225,13 @@ const api: IElectronAPI = {
   openExternal: url => ipcRenderer.invoke('system:open-external', url),
   getAppVersion: () => ipcRenderer.invoke('system:get-version'),
   getAppPath: name => ipcRenderer.invoke('system:get-path', name),
+
+  // Authentication API
+  loginWithGoogle: () => ipcRenderer.invoke('auth:login-google'),
+  logout: userId => ipcRenderer.invoke('auth:logout', userId),
+  getCurrentSession: () => ipcRenderer.invoke('auth:get-current-session'),
+  isAuthenticated: () => ipcRenderer.invoke('auth:is-authenticated'),
+  refreshToken: userId => ipcRenderer.invoke('auth:refresh-token', userId),
 };
 
 // Expose API to renderer process via contextBridge

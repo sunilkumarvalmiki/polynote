@@ -104,7 +104,6 @@ That's it! PolyNote should now be running on your computer.
 - [**Getting Started Guide**](docs/getting-started.md) - Step-by-step setup instructions
 - [**User Guide**](docs/user-guide.md) - How to use PolyNote's features
 - [**Developer Guide**](docs/developer-guide.md) - For contributors and developers
-- [**API Reference**](docs/api-reference.md) - Technical API documentation
 - [**Database Optimization Guide**](docs/database-optimization.md) - Performance tuning and best practices
 
 ---
@@ -276,8 +275,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support & Community
 
 - **Issues**: [GitHub Issues](https://github.com/sunilkumarvalmiki/polynote/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/sunilkumarvalmiki/polynote/discussions)
-- **Email**: support@polynote.dev (coming soon)
+- **Email**: Contact via GitHub Issues
 
 ---
 

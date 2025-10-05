@@ -1,6 +1,6 @@
 /**
  * PolyNote Security Module
- * Provides encryption, key management, access control, and secure sharing
+ * Provides encryption, key management, access control, secure sharing, and authentication
  */
 
 export * from './types/index.js';
@@ -9,6 +9,7 @@ export * from './encryption/EncryptionService.js';
 export * from './access/AccessControlService.js';
 export * from './share/ShareBundleService.js';
 export * from './validation/InputValidator.js';
+export * from './auth/index.js';
 
 import { AccessControlService } from './access/AccessControlService.js';
 import { EncryptionService } from './encryption/EncryptionService.js';
