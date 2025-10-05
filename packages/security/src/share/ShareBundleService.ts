@@ -14,8 +14,8 @@ import {
   ShareBundleMetadata,
   SecurityError,
   SecurityErrorCode,
-} from '../types';
-import { ensureBuffer } from '../utils/buffer';
+} from '../types/index.js';
+import { ensureBuffer } from '../utils/buffer.js';
 
 interface BundleNote {
   id: string;
@@ -66,7 +66,7 @@ export class ShareBundleService implements IShareBundleService {
 
       // TODO: In production, fetch actual note data from database
       // For now, create placeholder data
-      const notes: BundleNote[] = config.noteIds.map(id => ({
+      const notes: BundleNote[] = config.noteIds.map((id: string) => ({
         id,
         title: `Note ${id}`,
         content: `Content for note ${id}`,
@@ -248,7 +248,7 @@ export class ShareBundleService implements IShareBundleService {
       };
 
       // Create bundle data (same as OpenPGP version)
-      const notes: BundleNote[] = config.noteIds.map(id => ({
+      const notes: BundleNote[] = config.noteIds.map((id: string) => ({
         id,
         title: `Note ${id}`,
         content: `Content for note ${id}`,

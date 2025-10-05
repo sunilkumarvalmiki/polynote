@@ -63,7 +63,18 @@ function createWindow(): void {
 }
 
 // App lifecycle events
-void app.whenReady().then(() => {
+void app.whenReady().then(async () => {
+  // Initialize database first using dynamic import for ES module
+  try {
+    const { initializeDatabase } = await import('@polynote/shared');
+    initializeDatabase();
+    console.log('Database initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    app.quit();
+    return;
+  }
+
   // Register IPC handlers
   registerIpcHandlers();
 

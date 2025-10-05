@@ -11,8 +11,8 @@ import {
   KeyPurpose,
   SecurityError,
   SecurityErrorCode,
-} from '../types';
-import { ensureBuffer } from '../utils/buffer';
+} from '../types/index.js';
+import { ensureBuffer } from '../utils/buffer.js';
 
 /**
  * BIP39 word list subset for recovery phrases (simplified for demo)

@@ -62,6 +62,41 @@ interface Settings {
   [key: string]: unknown;
 }
 
+interface ShareBundleOptions {
+  includeAttachments?: boolean;
+  expiresAt?: number;
+}
+
+interface ShareBundleMetadata {
+  version: string;
+  createdAt: number;
+  expiresAt?: number;
+  noteCount: number;
+  hasAttachments: boolean;
+  algorithm: string;
+}
+
+interface ShareBundleResult {
+  bundle: string;
+  size: number;
+}
+
+interface ExtractedBundle {
+  notes: Array<{
+    id: string;
+    title: string;
+    content: string;
+    tags: string[];
+  }>;
+  attachments?: Array<{
+    id: string;
+    noteId: string;
+    filename: string;
+    data: Buffer;
+  }>;
+  metadata: ShareBundleMetadata;
+}
+
 // Types for IPC channels
 export interface IElectronAPI {
   // Notes API
@@ -97,6 +132,16 @@ export interface IElectronAPI {
   // Settings API
   getSettings: () => Promise<Settings>;
   updateSettings: (updates: Partial<Settings>) => Promise<void>;
+
+  // Share Bundle API
+  createShareBundle: (
+    noteIds: string[],
+    password: string,
+    options?: ShareBundleOptions
+  ) => Promise<ShareBundleResult>;
+  extractShareBundle: (bundleBase64: string, password: string) => Promise<ExtractedBundle>;
+  verifyShareBundle: (bundleBase64: string) => Promise<{ isValid: boolean }>;
+  getShareBundleMetadata: (bundleBase64: string) => Promise<ShareBundleMetadata>;
 
   // System API
   openExternal: (url: string) => Promise<void>;
@@ -145,6 +190,15 @@ const api: IElectronAPI = {
   // Settings API
   getSettings: () => ipcRenderer.invoke('settings:get'),
   updateSettings: updates => ipcRenderer.invoke('settings:update', updates),
+
+  // Share Bundle API
+  createShareBundle: (noteIds, password, options) =>
+    ipcRenderer.invoke('share:create-bundle', noteIds, password, options),
+  extractShareBundle: (bundleBase64, password) =>
+    ipcRenderer.invoke('share:extract-bundle', bundleBase64, password),
+  verifyShareBundle: bundleBase64 => ipcRenderer.invoke('share:verify-bundle', bundleBase64),
+  getShareBundleMetadata: bundleBase64 =>
+    ipcRenderer.invoke('share:get-bundle-metadata', bundleBase64),
 
   // System API
   openExternal: url => ipcRenderer.invoke('system:open-external', url),

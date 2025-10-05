@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { Save, Eye, EyeOff, Sparkles, Languages, RefreshCw, Trash2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Save, Eye, EyeOff, Sparkles, Languages, RefreshCw, Trash2, Bold, Italic, Code, List, ListOrdered, Link as LinkIcon, Image } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
@@ -21,6 +21,7 @@ interface Note {
 
 export function NoteEditor({ noteId }: NoteEditorProps) {
   const queryClient = useQueryClient();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -146,6 +147,25 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
     }
   };
 
+  const insertMarkdown = (prefix: string, suffix: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    const newContent = content.substring(0, start) + prefix + selectedText + suffix + content.substring(end);
+    
+    setContent(newContent);
+    
+    // Restore focus and set cursor position
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + prefix.length + selectedText.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -223,11 +243,32 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
                 Translate to Hindi
               </button>
               <button
-                onClick={() => void handleAIRewrite('formal')}
+                onClick={() => void handleAIRewrite('professional')}
                 className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
               >
                 <RefreshCw size={14} />
-                Rewrite (Formal)
+                Rewrite (Professional)
+              </button>
+              <button
+                onClick={() => void handleAIRewrite('casual')}
+                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
+              >
+                <RefreshCw size={14} />
+                Rewrite (Casual)
+              </button>
+              <button
+                onClick={() => void handleAIRewrite('concise')}
+                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
+              >
+                <RefreshCw size={14} />
+                Rewrite (Concise)
+              </button>
+              <button
+                onClick={() => void handleAIRewrite('detailed')}
+                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
+              >
+                <RefreshCw size={14} />
+                Rewrite (Detailed)
               </button>
             </div>
           </div>
@@ -273,7 +314,7 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="Note title..."
-              className="w-full text-3xl font-bold bg-transparent border-none focus:outline-none"
+              className="w-full text-3xl font-bold bg-transparent border-none border-b-2 border-b-transparent focus:outline-none focus:border-b-primary transition-colors pb-2"
             />
 
             {/* Tags */}
@@ -294,12 +335,40 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
               />
             </div>
 
+            {/* Markdown Toolbar */}
+            <div className="flex items-center gap-1 p-2 border-b border-border bg-muted/30">
+              <button onClick={() => insertMarkdown('**', '**')} className="p-2 hover:bg-muted rounded" title="Bold">
+                <Bold size={16} />
+              </button>
+              <button onClick={() => insertMarkdown('*', '*')} className="p-2 hover:bg-muted rounded" title="Italic">
+                <Italic size={16} />
+              </button>
+              <button onClick={() => insertMarkdown('`', '`')} className="p-2 hover:bg-muted rounded" title="Code">
+                <Code size={16} />
+              </button>
+              <div className="w-px h-6 bg-border mx-1" />
+              <button onClick={() => insertMarkdown('\n- ', '')} className="p-2 hover:bg-muted rounded" title="Bullet List">
+                <List size={16} />
+              </button>
+              <button onClick={() => insertMarkdown('\n1. ', '')} className="p-2 hover:bg-muted rounded" title="Numbered List">
+                <ListOrdered size={16} />
+              </button>
+              <div className="w-px h-6 bg-border mx-1" />
+              <button onClick={() => insertMarkdown('[', '](url)')} className="p-2 hover:bg-muted rounded" title="Link">
+                <LinkIcon size={16} />
+              </button>
+              <button onClick={() => insertMarkdown('![alt](', ')')} className="p-2 hover:bg-muted rounded" title="Image">
+                <Image size={16} />
+              </button>
+            </div>
+
             {/* Content */}
             <textarea
+              ref={textareaRef}
               value={content}
               onChange={e => setContent(e.target.value)}
               placeholder="Start writing..."
-              className="w-full flex-1 min-h-[500px] p-4 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm resize-none"
+              className="w-full flex-1 min-h-[500px] p-4 bg-muted border-0 focus:outline-none focus:ring-0 font-mono text-sm resize-none"
               spellCheck={false}
             />
 

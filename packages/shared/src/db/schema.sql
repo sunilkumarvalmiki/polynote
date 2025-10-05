@@ -155,6 +155,18 @@ CREATE TABLE IF NOT EXISTS ShareBundle (
   FOREIGN KEY (encryption_key_id) REFERENCES EncryptionKey(id)
 );
 
+-- Rules for automation
+CREATE TABLE IF NOT EXISTS rules (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  trigger TEXT NOT NULL CHECK(trigger IN ('onCreate', 'onUpdate', 'onTag')),
+  conditions TEXT NOT NULL,
+  actions TEXT NOT NULL,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_note_source ON Note(source_connector, source_id);
 CREATE INDEX IF NOT EXISTS idx_note_updated ON Note(updated_at);

@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Moon, Sun, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { t, setLanguage, getCurrentLanguage } from '../i18n';
+import { ThemeSwitcher } from '../components/ThemeSwitcher';
 
 interface Settings {
   theme: 'light' | 'dark' | 'system';
@@ -13,6 +15,7 @@ interface Settings {
 export function SettingsPage() {
   const queryClient = useQueryClient();
   const [localSettings, setLocalSettings] = useState<Settings | null>(null);
+  const [currentLang, setCurrentLang] = useState(getCurrentLanguage());
 
   const { data: settings } = useQuery({
     queryKey: ['settings'],
@@ -49,6 +52,8 @@ export function SettingsPage() {
   const handleLanguageChange = (language: string) => {
     setLocalSettings(prev => (prev ? { ...prev, language } : null));
     updateMutation.mutate({ language });
+    setLanguage(language as 'en' | 'te' | 'hi');
+    setCurrentLang(language as 'en' | 'te' | 'hi');
   };
 
   const handleSyncIntervalChange = (syncInterval: number) => {
@@ -81,34 +86,13 @@ export function SettingsPage() {
         {/* Appearance */}
         <section className="bg-card border border-border rounded-lg p-6 space-y-4">
           <h2 className="text-xl font-semibold">Appearance</h2>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Theme</label>
-            <div className="flex gap-3">
-              <button
-                onClick={() => handleThemeChange('light')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
-                  localSettings.theme === 'light'
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Sun size={20} />
-                <span>Light</span>
-              </button>
-              <button
-                onClick={() => handleThemeChange('dark')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
-                  localSettings.theme === 'dark'
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Moon size={20} />
-                <span>Dark</span>
-              </button>
-            </div>
-          </div>
+          <ThemeSwitcher
+            currentMode={localSettings.theme}
+            onModeChange={(mode) => {
+              setLocalSettings(prev => (prev ? { ...prev, theme: mode } : null));
+              updateMutation.mutate({ theme: mode });
+            }}
+          />
         </section>
 
         {/* Localization */}
@@ -119,7 +103,9 @@ export function SettingsPage() {
           </h2>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Interface Language</label>
+            <label className="block text-sm font-medium mb-2">
+              {t('settings.interfaceLanguage') || 'Interface Language'}
+            </label>
             <select
               value={localSettings.language}
               onChange={e => handleLanguageChange(e.target.value)}
@@ -129,6 +115,12 @@ export function SettingsPage() {
               <option value="te">తెలుగు (Telugu)</option>
               <option value="hi">हिन्दी (Hindi)</option>
             </select>
+            
+            <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+              <p className="text-xs text-muted-foreground">
+                Current language: <span className="font-medium">{currentLang}</span>
+              </p>
+            </div>
           </div>
         </section>
 

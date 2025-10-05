@@ -15,8 +15,8 @@ import {
   KeyPurpose,
   SecurityError,
   SecurityErrorCode,
-} from '../types';
-import { ensureBuffer } from '../utils/buffer';
+} from '../types/index.js';
+import { ensureBuffer } from '../utils/buffer.js';
 
 export class EncryptionService implements IEncryptionService {
   private sodium: SodiumPlus | null = null;

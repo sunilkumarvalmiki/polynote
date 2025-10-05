@@ -3,17 +3,18 @@
  * Provides encryption, key management, access control, and secure sharing
  */
 
-export * from './types';
-export * from './kms/KeyManagementService';
-export * from './encryption/EncryptionService';
-export * from './access/AccessControlService';
-export * from './share/ShareBundleService';
+export * from './types/index.js';
+export * from './kms/KeyManagementService.js';
+export * from './encryption/EncryptionService.js';
+export * from './access/AccessControlService.js';
+export * from './share/ShareBundleService.js';
+export * from './validation/InputValidator.js';
 
-import { AccessControlService } from './access/AccessControlService';
-import { EncryptionService } from './encryption/EncryptionService';
-import { KeyManagementService } from './kms/KeyManagementService';
-import { ShareBundleService } from './share/ShareBundleService';
-import { SecurityConfig } from './types';
+import { AccessControlService } from './access/AccessControlService.js';
+import { EncryptionService } from './encryption/EncryptionService.js';
+import { KeyManagementService } from './kms/KeyManagementService.js';
+import { ShareBundleService } from './share/ShareBundleService.js';
+import { SecurityConfig } from './types/index.js';
 
 /**
  * Initialize security module with all services

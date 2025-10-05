@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 
 import { NoteEditor } from '../components/NoteEditor';
 import { NoteList } from '../components/NoteList';
@@ -40,9 +41,12 @@ export function NotesPage() {
           <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search notes..." />
           <button
             onClick={() => void handleNoteCreate()}
-            className="w-full mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            className="w-full mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+            aria-label="Create new note"
+            title="Create new note"
           >
-            + New Note
+            <Plus size={20} />
+            <span>New Note</span>
           </button>
         </div>
 

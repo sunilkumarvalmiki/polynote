@@ -2,6 +2,7 @@
   "name": "@polynote/security",
   "version": "1.0.0",
   "description": "Security and encryption module for PolyNote",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -23,7 +24,9 @@
   "dependencies": {
     "@polynote/shared": "workspace:*",
     "sodium-plus": "^0.9.0",
-    "openpgp": "^5.11.0"
+    "openpgp": "^5.11.0",
+    "isomorphic-dompurify": "^2.16.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

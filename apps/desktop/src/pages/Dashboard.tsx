@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { FileText, Database, GitBranch, TrendingUp } from 'lucide-react';
+import { FileText, Database, GitBranch, TrendingUp, Link as LinkIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface Note {
@@ -19,16 +19,22 @@ interface Rule {
   enabled: boolean;
 }
 
+interface Connector {
+  id: string;
+  name: string;
+  status: string;
+  enabled: boolean;
+}
+
 interface SyncStatus {
-  isActive: boolean;
-  lastSync?: string;
-  connectorId?: string;
-  progress?: number;
+  isRunning: boolean;
+  lastSync: string;
+  connectors: Connector[];
 }
 
 interface StatCardProps {
   title: string;
-  value: string | number;
+  value: string | number | React.ReactNode;
   icon: React.ReactNode;
   trend?: string;
   link?: string;
@@ -36,9 +42,9 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon, trend, link }: StatCardProps) {
   const content = (
-    <div className="bg-card border border-border rounded-lg p-6 hover:border-primary transition-colors">
-      <div className="flex items-start justify-between">
-        <div>
+    <div className="bg-card border border-border rounded-lg p-6 hover:border-primary transition-colors min-h-[140px]">
+      <div className="flex items-start justify-between h-full">
+        <div className="flex flex-col justify-between h-full">
           <p className="text-sm text-muted-foreground mb-1">{title}</p>
           <p className="text-3xl font-bold">{value}</p>
           {trend && (
@@ -48,7 +54,7 @@ function StatCard({ title, value, icon, trend, link }: StatCardProps) {
             </p>
           )}
         </div>
-        <div className="p-3 bg-primary/10 rounded-lg text-primary">{icon}</div>
+        <div className="p-3 bg-primary/10 rounded-lg text-primary self-start">{icon}</div>
       </div>
     </div>
   );
@@ -66,7 +72,7 @@ export function Dashboard() {
     },
   });
 
-  const { data: rules = [] } = useQuery<Rule[]>({
+  const { data: rules = [] } = useQuery({
     queryKey: ['rules'],
     queryFn: async () => {
       const api = window.electronAPI;
@@ -85,7 +91,14 @@ export function Dashboard() {
     refetchInterval: 5000,
   });
 
-  const isSyncing = syncStatus?.isActive ?? false;
+  const isSyncing = syncStatus?.isRunning ?? false;
+  const connectorStats = {
+    active: syncStatus?.connectors?.filter((c: Connector) => c.enabled).length ?? 0,
+    total: syncStatus?.connectors?.length ?? 0,
+  };
+
+  // Count tagged notes
+  const taggedNotes = notes.filter(note => note.tags && note.tags.length > 0).length;
 
   return (
     <div className="h-full overflow-auto">
@@ -98,8 +111,8 @@ export function Dashboard() {
           </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Stats Grid - 4 cards in uniform layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Notes"
             value={notes.length}
@@ -109,15 +122,41 @@ export function Dashboard() {
           />
           <StatCard
             title="Sync Status"
-            value={isSyncing ? 'Syncing' : 'Idle'}
+            value={
+              <div className="space-y-2">
+                <span className="text-2xl font-bold">
+                  {isSyncing ? 'Syncing' : 'Idle'}
+                </span>
+                {isSyncing && syncStatus?.progress !== undefined && (
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-primary h-2 rounded-full transition-all"
+                      style={{ width: `${syncStatus.progress * 100}%` }}
+                    />
+                  </div>
+                )}
+                {syncStatus?.lastSync && (
+                  <p className="text-xs text-muted-foreground">
+                    Last: {new Date(syncStatus.lastSync).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            }
             icon={<Database size={24} />}
             link="/settings"
           />
           <StatCard
             title="Active Rules"
-            value={rules.length}
+            value={rules.filter((r: Rule) => r.enabled).length}
             icon={<GitBranch size={24} />}
             link="/rules"
+          />
+          <StatCard
+            title="Connectors"
+            value={connectorStats.active}
+            icon={<LinkIcon size={24} />}
+            trend={`${connectorStats.total} total`}
+            link="/settings"
           />
         </div>
 

@@ -15,11 +15,17 @@ interface SearchOptions {
   maxResults?: number;
 }
 
+interface Connector {
+  id: string;
+  name: string;
+  status: string;
+  enabled: boolean;
+}
+
 interface SyncStatus {
-  isActive: boolean;
-  lastSync?: string;
-  connectorId?: string;
-  progress?: number;
+  isRunning: boolean;
+  lastSync: string;
+  connectors: Connector[];
 }
 
 interface SyncProgress {
@@ -45,12 +51,26 @@ interface Graph {
   edges: Array<{ source: string; target: string; label?: string }>;
 }
 
+interface Condition {
+  field: 'title' | 'content' | 'tags';
+  operator: 'contains' | 'matches' | 'equals';
+  value: string;
+}
+
+interface Action {
+  type: 'addTag' | 'moveToFolder' | 'notify' | 'summarize';
+  params: Record<string, any>;
+}
+
 interface Rule {
   id: string;
   name: string;
-  trigger: string;
-  actions: string[];
+  trigger: 'onCreate' | 'onUpdate' | 'onTag';
+  conditions: Condition[];
+  actions: Action[];
   enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Settings {
@@ -59,6 +79,41 @@ interface Settings {
   syncEnabled: boolean;
   aiProvider?: string;
   [key: string]: unknown;
+}
+
+interface ShareBundleOptions {
+  includeAttachments?: boolean;
+  expiresAt?: number;
+}
+
+interface ShareBundleMetadata {
+  version: string;
+  createdAt: number;
+  expiresAt?: number;
+  noteCount: number;
+  hasAttachments: boolean;
+  algorithm: string;
+}
+
+interface ShareBundleResult {
+  bundle: string; // base64 encoded
+  size: number;
+}
+
+interface ExtractedBundle {
+  notes: Array<{
+    id: string;
+    title: string;
+    content: string;
+    tags: string[];
+  }>;
+  attachments?: Array<{
+    id: string;
+    noteId: string;
+    filename: string;
+    data: Buffer;
+  }>;
+  metadata: ShareBundleMetadata;
 }
 
 interface IElectronAPI {
@@ -95,6 +150,16 @@ interface IElectronAPI {
   // Settings API
   getSettings: () => Promise<Settings>;
   updateSettings: (updates: Partial<Settings>) => Promise<void>;
+
+  // Share Bundle API
+  createShareBundle: (
+    noteIds: string[],
+    password: string,
+    options?: ShareBundleOptions
+  ) => Promise<ShareBundleResult>;
+  extractShareBundle: (bundleBase64: string, password: string) => Promise<ExtractedBundle>;
+  verifyShareBundle: (bundleBase64: string) => Promise<{ isValid: boolean }>;
+  getShareBundleMetadata: (bundleBase64: string) => Promise<ShareBundleMetadata>;
 
   // System API
   openExternal: (url: string) => Promise<void>;

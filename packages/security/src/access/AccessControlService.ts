@@ -9,7 +9,7 @@ import {
   PermissionLevel,
   SecurityError,
   SecurityErrorCode,
-} from '../types';
+} from '../types/index.js';
 
 /**
  * Action to permission mapping

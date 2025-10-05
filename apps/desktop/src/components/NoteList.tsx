@@ -19,10 +19,19 @@ interface Note {
   updatedAt: string;
 }
 
+interface PaginatedNotes {
+  data: Note[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export function NoteList({ searchQuery, selectedNoteId, onNoteSelect }: NoteListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
 
   // Fetch notes with optional search filter
+  // Note: Backend will be updated to return paginated format in next iteration
   const { data: notes = [], isLoading } = useQuery<Note[]>({
     queryKey: ['notes', searchQuery],
     queryFn: async () => {

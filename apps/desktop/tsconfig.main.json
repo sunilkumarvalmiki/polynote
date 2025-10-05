@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "module": "commonjs",
+    "module": "node16",
     "target": "ES2022",
     "lib": ["ES2022"],
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "noEmit": false,
     "jsx": "preserve",
     "skipLibCheck": true,
@@ -13,6 +13,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],

@@ -13,7 +13,10 @@ const DB_PATH = join(DB_DIR, 'notes.db');
 
 let db: Database.Database | null = null;
 
-// Initialize database connection
+// Statement cache for prepared statements
+const statementCache = new Map<string, Database.Statement>();
+
+// Initialize database connection with optimized settings
 function ensureDatabase(): Database.Database {
   if (!db) {
     // Ensure .polynote directory exists
@@ -22,10 +25,14 @@ function ensureDatabase(): Database.Database {
     // Create database connection
     db = new Database(DB_PATH);
 
-    // Enable WAL mode for better concurrency
-    db.pragma('journal_mode = WAL');
-    db.pragma('foreign_keys = ON');
-    db.pragma('synchronous = NORMAL');
+    // Performance optimization pragmas
+    db.pragma('journal_mode = WAL'); // Write-Ahead Logging for better concurrency
+    db.pragma('foreign_keys = ON'); // Enforce foreign key constraints
+    db.pragma('synchronous = NORMAL'); // Balance between safety and performance
+    db.pragma('temp_store = MEMORY'); // Store temp tables in memory
+    db.pragma('mmap_size = 30000000000'); // Use memory-mapped I/O (30GB)
+    db.pragma('page_size = 4096'); // Optimal page size for most systems
+    db.pragma('cache_size = -64000'); // 64MB cache (negative = KB)
   }
   return db;
 }
@@ -48,37 +55,58 @@ export function getDatabase(): Database.Database {
   return ensureDatabase();
 }
 
-// Close database connection
+// Close database connection and clear caches
 export function closeDatabase(): void {
   if (db) {
+    // Clear statement cache
+    statementCache.clear();
+    
+    // Close database
     db.close();
     db = null;
   }
 }
 
-// Transaction helper
+// Transaction helper with batching support
 export function transaction<T>(fn: () => T): T {
   const database = ensureDatabase();
   const txn = database.transaction(fn);
   return txn();
 }
 
-// Query helpers
-export function query<T = unknown>(sql: string, params?: unknown[]): T[] {
+// Batch transaction for bulk operations
+export function batchTransaction(operations: Array<() => void>): void {
   const database = ensureDatabase();
-  const stmt = database.prepare(sql);
+  const batch = database.transaction(() => {
+    for (const op of operations) {
+      op();
+    }
+  });
+  batch();
+}
+
+// Get or create prepared statement from cache
+function getPreparedStatement(sql: string): Database.Statement {
+  if (!statementCache.has(sql)) {
+    const database = ensureDatabase();
+    statementCache.set(sql, database.prepare(sql));
+  }
+  return statementCache.get(sql)!;
+}
+
+// Query helpers with prepared statement caching
+export function query<T = unknown>(sql: string, params?: unknown[]): T[] {
+  const stmt = getPreparedStatement(sql);
   return params ? (stmt.all(...params) as T[]) : (stmt.all() as T[]);
 }
 
 export function queryOne<T = unknown>(sql: string, params?: unknown[]): T | undefined {
-  const database = ensureDatabase();
-  const stmt = database.prepare(sql);
+  const stmt = getPreparedStatement(sql);
   return params ? (stmt.get(...params) as T) : (stmt.get() as T);
 }
 
 export function execute(sql: string, params?: unknown[]): Database.RunResult {
-  const database = ensureDatabase();
-  const stmt = database.prepare(sql);
+  const stmt = getPreparedStatement(sql);
   return params ? stmt.run(...params) : stmt.run();
 }
 
