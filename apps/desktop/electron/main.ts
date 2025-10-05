@@ -49,7 +49,7 @@ function createWindow(): void {
     // Production mode: Load from built files
     void mainWindow.loadURL(
       url.format({
-        pathname: path.join(__dirname, '../renderer/index.html'),
+        pathname: path.join(__dirname, './renderer/index.html'),
         protocol: 'file:',
         slashes: true,
       })

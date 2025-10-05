@@ -39,6 +39,7 @@
     "lucide-react": "^0.475.0"
   },
   "devDependencies": {
+    "@electron/notarize": "^3.1.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "electron": "^38.2.1",
@@ -90,8 +91,14 @@
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "assets/entitlements.mac.plist",
-      "entitlementsInherit": "assets/entitlements.mac.plist"
+      "entitlementsInherit": "assets/entitlements.mac.plist",
+      "identity": null,
+      "signIgnore": [
+        "node_modules"
+      ],
+      "type": "distribution"
     },
+    "afterSign": "scripts/notarize.js",
     "dmg": {
       "contents": [
         {
