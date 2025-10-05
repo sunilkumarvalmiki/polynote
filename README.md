@@ -105,6 +105,7 @@ That's it! PolyNote should now be running on your computer.
 - [**User Guide**](docs/user-guide.md) - How to use PolyNote's features
 - [**Developer Guide**](docs/developer-guide.md) - For contributors and developers
 - [**API Reference**](docs/api-reference.md) - Technical API documentation
+- [**Database Optimization Guide**](docs/database-optimization.md) - Performance tuning and best practices
 
 ---
 
