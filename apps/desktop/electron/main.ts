@@ -90,6 +90,9 @@ void app.whenReady().then(async () => {
     // Create auth handler
     const authHandler = new ElectronAuthHandler(db, encryptionService);
 
+    // Initialize session restoration
+    await authHandler.initialize();
+
     // Store globally for IPC handlers
     // @ts-ignore
     global.authHandler = authHandler;

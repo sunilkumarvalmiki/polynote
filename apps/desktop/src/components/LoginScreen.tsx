@@ -7,10 +7,14 @@ import React, { useState } from 'react';
 import './LoginScreen.css';
 
 interface LoginScreenProps {
-  onLoginSuccess: (session: any) => void;
+  onLoginSuccess: () => void;
+  onContinueAsGuest?: () => void;
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({
+  onLoginSuccess,
+  onContinueAsGuest
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,10 +25,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     try {
       const result = await window.electronAPI.loginWithGoogle();
 
-      if (result.success && result.session) {
-        onLoginSuccess(result.session);
+      if (result.success) {
+        onLoginSuccess();
       } else {
-        throw new Error('Login failed - no session returned');
+        throw new Error(result.error || 'Login failed - no session returned');
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -147,7 +151,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
             <p className="skip-login">
               <button
-                onClick={() => onLoginSuccess(null)}
+                onClick={() => onContinueAsGuest?.()}
                 className="skip-btn"
                 disabled={isLoading}
               >

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { FileText, Database, GitBranch, TrendingUp, Link as LinkIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 interface Note {
   id: string;
@@ -30,6 +31,13 @@ interface SyncStatus {
   isRunning: boolean;
   lastSync: string;
   connectors: Connector[];
+  progress?: number;
+}
+
+interface SyncProgress {
+  stage: string;
+  progress: number;
+  message?: string;
 }
 
 interface StatCardProps {
@@ -63,6 +71,9 @@ function StatCard({ title, value, icon, trend, link }: StatCardProps) {
 }
 
 export function Dashboard() {
+  const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+
   const { data: notes = [] } = useQuery<Note[]>({
     queryKey: ['notes'],
     queryFn: async () => {
@@ -90,6 +101,45 @@ export function Dashboard() {
     },
     refetchInterval: 5000,
   });
+
+  // Subscribe to real-time sync progress events
+  useEffect(() => {
+    const api = window.electronAPI;
+    if (!api?.onSyncProgress) return;
+
+    const unsubscribe = api.onSyncProgress((progress) => {
+      setSyncProgress(progress);
+      // Clear progress after sync completes
+      if (progress.progress >= 100) {
+        setTimeout(() => {
+          setSyncProgress(null);
+          setLastSyncTime(new Date().toISOString());
+        }, 1000);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Calculate time since last sync
+  const getTimeSinceLastSync = () => {
+    const syncTime = lastSyncTime || syncStatus?.lastSync;
+    if (!syncTime) return null;
+
+    const now = new Date();
+    const lastSync = new Date(syncTime);
+    const diffMs = now.getTime() - lastSync.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  };
 
   const isSyncing = syncStatus?.isRunning ?? false;
   const connectorStats = {
@@ -125,19 +175,29 @@ export function Dashboard() {
             value={
               <div className="space-y-2">
                 <span className="text-2xl font-bold">
-                  {isSyncing ? 'Syncing' : 'Idle'}
+                  {isSyncing || syncProgress ? 'Syncing' : 'Idle'}
                 </span>
-                {isSyncing && syncStatus?.progress !== undefined && (
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full transition-all"
-                      style={{ width: `${syncStatus.progress * 100}%` }}
-                    />
+                {(isSyncing || syncProgress) && (
+                  <div className="space-y-1">
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${syncProgress?.progress ?? 0}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-muted-foreground">
+                        {syncProgress?.stage || 'Syncing...'}
+                      </p>
+                      <p className="text-xs font-medium text-primary">
+                        {Math.round(syncProgress?.progress ?? 0)}%
+                      </p>
+                    </div>
                   </div>
                 )}
-                {syncStatus?.lastSync && (
+                {!isSyncing && !syncProgress && getTimeSinceLastSync() && (
                   <p className="text-xs text-muted-foreground">
-                    Last: {new Date(syncStatus.lastSync).toLocaleString()}
+                    Last synced: {getTimeSinceLastSync()}
                   </p>
                 )}
               </div>

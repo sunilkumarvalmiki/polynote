@@ -111,6 +111,18 @@ interface ExtractedBundle {
   metadata: ShareBundleMetadata;
 }
 
+interface ConnectorInfo {
+  name: string;
+  enabled: boolean;
+  status: string;
+  config?: Record<string, unknown>;
+}
+
+interface ConnectorTestResult {
+  success: boolean;
+  message?: string;
+}
+
 // Types for IPC channels
 export interface IElectronAPI {
   // Notes API
@@ -168,6 +180,19 @@ export interface IElectronAPI {
   getCurrentSession: () => Promise<UserSession | null>;
   isAuthenticated: () => Promise<boolean>;
   refreshToken: (userId: string) => Promise<{ success: boolean }>;
+
+  // Connector API
+  connectors?: {
+    list: () => Promise<ConnectorInfo[]>;
+    configure: (connectorId: string, config: Record<string, unknown>) => Promise<{ success: boolean }>;
+    test: (connectorId: string) => Promise<ConnectorTestResult>;
+    authorizeNotion: () => Promise<{ success: boolean; message?: string }>;
+  };
+
+  // System helpers
+  system?: {
+    selectFolder: () => Promise<string | null>;
+  };
 }
 
 // Expose protected methods to renderer process
@@ -232,6 +257,19 @@ const api: IElectronAPI = {
   getCurrentSession: () => ipcRenderer.invoke('auth:get-current-session'),
   isAuthenticated: () => ipcRenderer.invoke('auth:is-authenticated'),
   refreshToken: userId => ipcRenderer.invoke('auth:refresh-token', userId),
+
+  // Connector API
+  connectors: {
+    list: () => ipcRenderer.invoke('connectors:list'),
+    configure: (connectorId, config) => ipcRenderer.invoke('connectors:configure', connectorId, config),
+    test: connectorId => ipcRenderer.invoke('connectors:test', connectorId),
+    authorizeNotion: () => ipcRenderer.invoke('connectors:authorize-notion'),
+  },
+
+  // System helpers
+  system: {
+    selectFolder: () => ipcRenderer.invoke('system:select-folder'),
+  },
 };
 
 // Expose API to renderer process via contextBridge

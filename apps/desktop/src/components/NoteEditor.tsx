@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { Save, Eye, EyeOff, Sparkles, Languages, RefreshCw, Trash2, Bold, Italic, Code, List, ListOrdered, Link as LinkIcon, Image } from 'lucide-react';
+import { Save, Eye, EyeOff, Sparkles, Languages, RefreshCw, Trash2, Bold, Italic, Code, List, ListOrdered, Link as LinkIcon, Image, Loader2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkFrontmatter from 'remark-frontmatter';
@@ -28,6 +28,10 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
   const [isPreview, setIsPreview] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [showTranslateMenu, setShowTranslateMenu] = useState(false);
+  const [showRewriteMenu, setShowRewriteMenu] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Fetch note data
   const { data: note, isLoading } = useQuery<Note>({
@@ -105,43 +109,104 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
     }
   };
 
+  // Auto-dismiss messages after 3 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      const timer = setTimeout(() => setErrorMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowTranslateMenu(false);
+      setShowRewriteMenu(false);
+    };
+
+    if (showTranslateMenu || showRewriteMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showTranslateMenu, showRewriteMenu]);
+
   const handleAISummarize = async () => {
+    if (!note) return;
+
     setAiLoading(true);
+    setErrorMessage(null);
     try {
       const api = window.electronAPI;
-      if (!api) return;
+      if (!api) throw new Error('Electron API not available');
+
       const summary = await api.summarizeNote(noteId);
-      if (summary) setContent(prev => `${prev}\n\n## AI Summary\n\n${summary}`);
+      if (summary) {
+        const newContent = `${content}\n\n## AI Summary\n\n${summary}`;
+        setContent(newContent);
+        setSuccessMessage('Summary added to note');
+      }
     } catch (error) {
       console.error('Failed to summarize:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'AI summarization failed');
     } finally {
       setAiLoading(false);
     }
   };
 
   const handleAITranslate = async (targetLang: string) => {
+    if (!note) return;
+
     setAiLoading(true);
+    setErrorMessage(null);
+    setShowTranslateMenu(false);
+
     try {
       const api = window.electronAPI;
-      if (!api) return;
+      if (!api) throw new Error('Electron API not available');
+
       const translation = await api.translateNote(noteId, targetLang);
-      if (translation) setContent(translation);
+      if (translation) {
+        const langName = targetLang === 'te' ? 'Telugu' : 'Hindi';
+        const newContent = `${content}\n\n## Translation (${langName})\n\n${translation}`;
+        setContent(newContent);
+        setSuccessMessage(`Translation to ${langName} added to note`);
+      }
     } catch (error) {
       console.error('Failed to translate:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'AI translation failed');
     } finally {
       setAiLoading(false);
     }
   };
 
-  const handleAIRewrite = async (style: string) => {
+  const handleAIRewrite = async (tone: 'professional' | 'casual' | 'concise' | 'detailed') => {
+    if (!note) return;
+
     setAiLoading(true);
+    setErrorMessage(null);
+    setShowRewriteMenu(false);
+
     try {
       const api = window.electronAPI;
-      if (!api) return;
-      const rewritten = await api.rewriteNote(noteId, style);
-      if (rewritten) setContent(rewritten);
+      if (!api) throw new Error('Electron API not available');
+
+      const rewritten = await api.rewriteNote(noteId, tone);
+      if (rewritten) {
+        const toneName = tone.charAt(0).toUpperCase() + tone.slice(1);
+        const newContent = `${content}\n\n## Rewritten (${toneName})\n\n${rewritten}`;
+        setContent(newContent);
+        setSuccessMessage(`${toneName} version added to note`);
+      }
     } catch (error) {
       console.error('Failed to rewrite:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'AI rewrite failed');
     } finally {
       setAiLoading(false);
     }
@@ -212,76 +277,127 @@ export function NoteEditor({ noteId }: NoteEditorProps) {
 
         <div className="flex items-center gap-2">
           {/* AI Actions */}
-          <div className="relative group">
+          <button
+            onClick={() => void handleAISummarize()}
+            disabled={aiLoading}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+            title="Summarize with AI"
+          >
+            {aiLoading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+            <span className="hidden sm:inline">Summarize</span>
+          </button>
+
+          {/* Translate Dropdown */}
+          <div className="relative">
             <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTranslateMenu(!showTranslateMenu);
+                setShowRewriteMenu(false);
+              }}
               disabled={aiLoading}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+              title="Translate"
             >
-              <Sparkles size={16} />
-              <span>AI</span>
+              <Languages size={16} />
+              <span className="hidden sm:inline">Translate</span>
             </button>
-            <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-              <button
-                onClick={() => void handleAISummarize()}
-                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
-              >
-                <Sparkles size={14} />
-                Summarize
-              </button>
-              <button
-                onClick={() => void handleAITranslate('te')}
-                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
-              >
-                <Languages size={14} />
-                Translate to Telugu
-              </button>
-              <button
-                onClick={() => void handleAITranslate('hi')}
-                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
-              >
-                <Languages size={14} />
-                Translate to Hindi
-              </button>
-              <button
-                onClick={() => void handleAIRewrite('professional')}
-                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
-              >
-                <RefreshCw size={14} />
-                Rewrite (Professional)
-              </button>
-              <button
-                onClick={() => void handleAIRewrite('casual')}
-                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
-              >
-                <RefreshCw size={14} />
-                Rewrite (Casual)
-              </button>
-              <button
-                onClick={() => void handleAIRewrite('concise')}
-                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
-              >
-                <RefreshCw size={14} />
-                Rewrite (Concise)
-              </button>
-              <button
-                onClick={() => void handleAIRewrite('detailed')}
-                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
-              >
-                <RefreshCw size={14} />
-                Rewrite (Detailed)
-              </button>
-            </div>
+            {showTranslateMenu && (
+              <div className="absolute right-0 top-full mt-2 w-40 bg-card border border-border rounded-lg shadow-lg z-10">
+                <button
+                  onClick={() => void handleAITranslate('te')}
+                  className="w-full px-4 py-2 text-left hover:bg-muted transition-colors rounded-t-lg text-sm"
+                >
+                  Telugu
+                </button>
+                <button
+                  onClick={() => void handleAITranslate('hi')}
+                  className="w-full px-4 py-2 text-left hover:bg-muted transition-colors rounded-b-lg text-sm"
+                >
+                  Hindi
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Rewrite Dropdown */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowRewriteMenu(!showRewriteMenu);
+                setShowTranslateMenu(false);
+              }}
+              disabled={aiLoading}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+              title="Rewrite"
+            >
+              <RefreshCw size={16} />
+              <span className="hidden sm:inline">Rewrite</span>
+            </button>
+            {showRewriteMenu && (
+              <div className="absolute right-0 top-full mt-2 w-40 bg-card border border-border rounded-lg shadow-lg z-10">
+                <button
+                  onClick={() => void handleAIRewrite('professional')}
+                  className="w-full px-4 py-2 text-left hover:bg-muted transition-colors rounded-t-lg text-sm"
+                >
+                  Professional
+                </button>
+                <button
+                  onClick={() => void handleAIRewrite('casual')}
+                  className="w-full px-4 py-2 text-left hover:bg-muted transition-colors text-sm"
+                >
+                  Casual
+                </button>
+                <button
+                  onClick={() => void handleAIRewrite('concise')}
+                  className="w-full px-4 py-2 text-left hover:bg-muted transition-colors text-sm"
+                >
+                  Concise
+                </button>
+                <button
+                  onClick={() => void handleAIRewrite('detailed')}
+                  className="w-full px-4 py-2 text-left hover:bg-muted transition-colors rounded-b-lg text-sm"
+                >
+                  Detailed
+                </button>
+              </div>
+            )}
           </div>
 
           <button
             onClick={() => void handleDelete()}
             disabled={deleteMutation.isPending}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
           >
             <Trash2 size={16} />
+            <span className="hidden sm:inline">Delete</span>
           </button>
         </div>
       </div>
+
+      {/* Toast Notifications */}
+      {successMessage && (
+        <div className="absolute top-20 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 animate-in slide-in-from-top">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>{successMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="absolute top-20 right-4 bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 animate-in slide-in-from-top">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span>{errorMessage}</span>
+          </div>
+        </div>
+      )}
 
       {/* Editor/Preview */}
       <div className="flex-1 overflow-auto">

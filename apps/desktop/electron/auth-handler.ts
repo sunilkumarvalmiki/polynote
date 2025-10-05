@@ -28,6 +28,7 @@ export class ElectronAuthHandler {
   private sessionManager: SessionManager;
   private authConfig: AuthConfig;
   private callbackServer: http.Server | null = null;
+  private currentSession: UserSession | null = null;
 
   constructor(
     db: Database,
@@ -53,6 +54,77 @@ export class ElectronAuthHandler {
   }
 
   /**
+   * Initialize auth handler and restore session if valid
+   * Should be called on app startup
+   */
+  async initialize(): Promise<void> {
+    try {
+      // Load session from persistent storage
+      const storedSession = await this.sessionManager.getCurrentSession();
+
+      if (!storedSession) {
+        console.log('No stored session found');
+        return;
+      }
+
+      // Check if access token is expired
+      if (this.isTokenExpired(storedSession.accessToken)) {
+        console.log('Stored session token is expired, attempting refresh...');
+
+        // Attempt token refresh if refresh token is available
+        if (storedSession.refreshToken) {
+          try {
+            await this.refreshToken(storedSession.userId);
+            // After successful refresh, reload the session
+            this.currentSession = await this.sessionManager.getCurrentSession();
+            console.log('Session restored successfully after token refresh');
+          } catch (error) {
+            console.error('Token refresh failed, clearing session:', error);
+            await this.sessionManager.deleteSession(storedSession.userId);
+            this.currentSession = null;
+          }
+        } else {
+          console.log('No refresh token available, clearing expired session');
+          await this.sessionManager.deleteSession(storedSession.userId);
+          this.currentSession = null;
+        }
+      } else {
+        // Token is still valid, restore session
+        this.currentSession = storedSession;
+        console.log('Session restored successfully');
+      }
+    } catch (error) {
+      console.error('Failed to initialize auth handler:', error);
+      this.currentSession = null;
+    }
+  }
+
+  /**
+   * Check if a JWT token is expired
+   * @param token - The JWT token to check
+   * @returns true if token is expired or invalid, false otherwise
+   */
+  private isTokenExpired(token: string): boolean {
+    try {
+      // JWT tokens have 3 parts: header.payload.signature
+      const parts = token.split('.');
+      if (parts.length !== 3) return true;
+
+      const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+      const exp = payload.exp;
+
+      if (!exp) return false; // No expiration
+
+      const now = Math.floor(Date.now() / 1000);
+      const bufferTime = 300; // 5 minutes buffer
+
+      return exp < (now + bufferTime);
+    } catch {
+      return true; // If parsing fails, consider expired
+    }
+  }
+
+  /**
    * Initiate Google OAuth login flow
    */
   async initiateGoogleLogin(): Promise<UserSession> {
@@ -73,8 +145,11 @@ export class ElectronAuthHandler {
       // Start local server to receive callback
       const session = await this.startCallbackServer();
 
-      // Save session
+      // Save session to persistent storage
       await this.sessionManager.saveSession(session);
+
+      // Update current session
+      this.currentSession = session;
 
       return session;
     } catch (error) {
@@ -255,11 +330,16 @@ export class ElectronAuthHandler {
         session.refreshToken
       );
 
-      // Update session with new token
+      // Update session with new token in persistent storage
       await this.sessionManager.updateSession(userId, {
         accessToken: newAccessToken,
         expiresAt: new Date(Date.now() + 3600 * 1000), // 1 hour from now
       });
+
+      // Update current session if this is the current user
+      if (this.currentSession && this.currentSession.userId === userId) {
+        this.currentSession = await this.sessionManager.getSession(userId);
+      }
     } catch (error) {
       throw new AuthError(
         'Failed to refresh access token',
@@ -285,8 +365,13 @@ export class ElectronAuthHandler {
           // Continue with logout even if revocation fails
         }
 
-        // Delete local session
+        // Delete local session from persistent storage
         await this.sessionManager.deleteSession(userId);
+
+        // Clear current session if this is the current user
+        if (this.currentSession && this.currentSession.userId === userId) {
+          this.currentSession = null;
+        }
       }
     } catch (error) {
       throw new AuthError('Failed to logout', 'OAUTH_FAILED' as any, error as Error);

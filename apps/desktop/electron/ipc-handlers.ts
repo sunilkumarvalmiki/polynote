@@ -66,27 +66,101 @@ async function getAiModule() {
 
 // AI Service instance
 let aiService: any = null;
+let providerRegistry: any = null;
+
+/**
+ * Initialize AI providers with auto-detection and graceful fallback
+ * Implements Section 4.2.1 from missing_features.md
+ */
+async function initializeAIProviders() {
+  const ai = await getAiModule();
+  const { ProviderRegistry, OllamaProvider, OpenAIProvider, ClaudeProvider, ProviderType } = ai;
+
+  const registry = new ProviderRegistry();
+
+  // Try to register Ollama (local provider)
+  try {
+    const ollamaProvider = new OllamaProvider({
+      type: ProviderType.OLLAMA,
+      name: 'ollama-local',
+      baseUrl: 'http://localhost:11434',
+      model: 'llama2',
+      maxTokens: 4096,
+      temperature: 0.7,
+    });
+
+    // Initialize and verify availability
+    await ollamaProvider.initialize();
+    await registry.registerProvider({
+      type: ProviderType.OLLAMA,
+      name: 'ollama-local',
+      baseUrl: 'http://localhost:11434',
+      model: 'llama2',
+      maxTokens: 4096,
+      temperature: 0.7,
+    });
+
+    console.log('✅ Ollama provider registered');
+  } catch (error) {
+    console.warn('⚠️ Ollama not available, using cloud fallback:',
+      error instanceof Error ? error.message : 'Unknown error');
+  }
+
+  // Try to register cloud providers if API keys exist in settings
+  try {
+    // Check for OpenAI API key
+    if (mockSettings.openaiApiKey) {
+      await registry.registerProvider({
+        type: ProviderType.OPENAI,
+        name: 'openai',
+        baseUrl: 'https://api.openai.com/v1',
+        apiKey: mockSettings.openaiApiKey,
+        model: 'gpt-3.5-turbo',
+        maxTokens: 4096,
+        temperature: 0.7,
+      });
+      console.log('✅ OpenAI provider registered');
+    }
+  } catch (error) {
+    console.warn('⚠️ OpenAI provider registration failed:',
+      error instanceof Error ? error.message : 'Unknown error');
+  }
+
+  try {
+    // Check for Claude API key
+    if (mockSettings.claudeApiKey) {
+      await registry.registerProvider({
+        type: ProviderType.CLAUDE,
+        name: 'claude',
+        baseUrl: 'https://api.anthropic.com/v1',
+        apiKey: mockSettings.claudeApiKey,
+        model: 'claude-3-sonnet-20240229',
+        maxTokens: 4096,
+        temperature: 0.7,
+      });
+      console.log('✅ Claude provider registered');
+    }
+  } catch (error) {
+    console.warn('⚠️ Claude provider registration failed:',
+      error instanceof Error ? error.message : 'Unknown error');
+  }
+
+  return registry;
+}
 
 // Initialize AI service with providers
 async function initializeAiService() {
   if (aiService) return aiService;
-  
+
   const ai = await getAiModule();
-  const { AIService, ProviderRegistry } = ai;
-  
-  const registry = new ProviderRegistry();
-  
-  // Register Ollama as default local provider
-  await registry.registerProvider({
-    type: 'ollama',
-    name: 'ollama-local',
-    baseUrl: 'http://localhost:11434',
-    model: 'llama2',
-    maxTokens: 4096,
-    temperature: 0.7,
-  });
-  
-  aiService = new AIService(registry);
+  const { AIService } = ai;
+
+  // Initialize providers if not already done
+  if (!providerRegistry) {
+    providerRegistry = await initializeAIProviders();
+  }
+
+  aiService = new AIService(providerRegistry);
   return aiService;
 }
 
@@ -115,6 +189,8 @@ interface Settings {
   language: string;
   syncInterval: number;
   aiProvider: string;
+  openaiApiKey?: string;
+  claudeApiKey?: string;
   [key: string]: unknown;
 }
 
@@ -839,21 +915,126 @@ export function registerIpcHandlers(): void {
   });
 
   ipcMain.handle('connectors:configure', async (_, name: string, config: any) => {
+    const logger = await getAuditLogger();
+    const EventType = getAuditEventType();
+
+    try {
+      // Store configuration in settings
+      const connectorSettings = mockSettings[`connector_${name}`] || {};
+      mockSettings[`connector_${name}`] = { ...connectorSettings, ...config };
+
+      // Update connector if it exists in registry
+      const registry = await initializeConnectorRegistry();
+      const connector = registry.get(name);
+
+      if (connector && config.enabled !== undefined) {
+        connector.enabled = config.enabled;
+      }
+
+      // Log configuration update
+      await logger.log({
+        eventType: EventType.SETTINGS_UPDATE,
+        action: 'configure_connector',
+        status: 'success',
+        metadata: { connector: name, enabled: config.enabled },
+      });
+
+      return { success: true };
+    } catch (error) {
+      await logger.log({
+        eventType: EventType.SETTINGS_UPDATE,
+        action: 'configure_connector',
+        status: 'failure',
+        metadata: { connector: name },
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      });
+
+      console.error('Error configuring connector:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('connectors:test', async (_, name: string) => {
+    const logger = await getAuditLogger();
+    const EventType = getAuditEventType();
+
     try {
       const registry = await initializeConnectorRegistry();
       const connector = registry.get(name);
-      
+
       if (!connector) {
-        throw new Error(`Connector ${name} not found`);
+        return {
+          success: false,
+          message: `Connector ${name} not found. Please configure it first.`,
+        };
       }
-      
-      // Update connector configuration
-      // TODO: Implement configuration persistence
-      console.log(`Configuring ${name} with:`, config);
-      
-      return { success: true };
+
+      // Test connector authentication
+      try {
+        await connector.authenticate();
+
+        await logger.log({
+          eventType: EventType.SYNC_START,
+          action: 'test_connector',
+          status: 'success',
+          metadata: { connector: name },
+        });
+
+        return {
+          success: true,
+          message: `Successfully connected to ${name}!`,
+        };
+      } catch (authError) {
+        await logger.log({
+          eventType: EventType.SYNC_FAILURE,
+          action: 'test_connector',
+          status: 'failure',
+          metadata: { connector: name },
+          errorMessage: authError instanceof Error ? authError.message : 'Authentication failed',
+        });
+
+        return {
+          success: false,
+          message: authError instanceof Error ? authError.message : 'Authentication failed',
+        };
+      }
     } catch (error) {
-      console.error('Error configuring connector:', error);
+      console.error('Error testing connector:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Connection test failed',
+      };
+    }
+  });
+
+  ipcMain.handle('connectors:authorize-notion', async () => {
+    const logger = await getAuditLogger();
+    const EventType = getAuditEventType();
+
+    try {
+      // TODO: Implement Notion OAuth flow
+      // For now, return a placeholder response
+      console.log('Notion OAuth flow not yet implemented');
+
+      await logger.log({
+        eventType: EventType.SETTINGS_UPDATE,
+        action: 'authorize_notion',
+        status: 'success',
+      });
+
+      return {
+        success: true,
+        message: 'Notion OAuth flow will be implemented in the next sprint',
+      };
+    } catch (error) {
+      await logger.log({
+        eventType: EventType.SETTINGS_UPDATE,
+        action: 'authorize_notion',
+        status: 'failure',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      });
+
+      console.error('Error authorizing Notion:', error);
       throw error;
     }
   });
@@ -1251,6 +1432,25 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle('system:get-version', () => {
     return app.getVersion();
+  });
+
+  ipcMain.handle('system:select-folder', async () => {
+    try {
+      const { dialog } = await import('electron');
+      const result = await dialog.showOpenDialog({
+        properties: ['openDirectory'],
+        title: 'Select Folder',
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return null;
+      }
+
+      return result.filePaths[0];
+    } catch (error) {
+      console.error('Error selecting folder:', error);
+      throw error;
+    }
   });
 
   // ============================================================================

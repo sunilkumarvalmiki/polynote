@@ -21,7 +21,7 @@ export function GraphPage() {
   });
 
   useEffect(() => {
-    if (!containerRef.current || !graphData) return;
+    if (!containerRef.current || !graphData || !graphEnabled) return;
 
     // Create network - vis-network DataSet expects different property names
     const nodeData: Node[] = (graphData.nodes || []).map(node => ({
@@ -29,7 +29,7 @@ export function GraphPage() {
       label: node.label,
       group: node.type,
     }));
-    
+
     // Map edges to vis-network format - edges need id property
     const edgeData: Edge[] = (graphData.edges || []).map((edge, index) => ({
       id: `edge-${index}`,
@@ -37,7 +37,7 @@ export function GraphPage() {
       to: edge.target,
       label: edge.label,
     }));
-    
+
     const nodes = new DataSet(nodeData);
     const edges = new DataSet(edgeData);
 
@@ -94,7 +94,7 @@ export function GraphPage() {
     return () => {
       networkRef.current?.destroy();
     };
-  }, [graphData, physicsEnabled, showLabels, groupByTags]);
+  }, [graphData, physicsEnabled, showLabels, groupByTags, graphEnabled]);
 
   return (
     <div className="h-full flex flex-col">
