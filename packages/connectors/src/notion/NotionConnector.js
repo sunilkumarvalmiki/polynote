@@ -1,0 +1,368 @@
+import { Client } from '@notionhq/client';
+import { generateChecksum } from '@polynote/shared';
+import { BaseConnector } from '../base/BaseConnector.js';
+export class NotionConnector extends BaseConnector {
+    name = 'notion';
+    config;
+    client;
+    rateLimiter;
+    syncCursor;
+    constructor(config) {
+        super();
+        this.config = config;
+        this.enabled = config.enabled;
+        // Notion API rate limit: 3 requests per second
+        this.rateLimiter = this.createRateLimiter(3);
+    }
+    async initialize() {
+        if (!this.config.apiKey) {
+            throw new Error('Notion API key is required');
+        }
+        this.client = new Client({
+            auth: this.config.apiKey,
+        });
+        // Verify authentication by attempting to list databases
+        await this.rateLimiter(() => this.client.search({
+            filter: { property: 'object', value: 'database' },
+            page_size: 1,
+        }));
+    }
+    async authenticate() {
+        // OAuth 2.0 flow would be implemented here for production
+        // For now, we use API key authentication
+        if (!this.client) {
+            throw new Error('Notion client not initialized');
+        }
+        await Promise.resolve();
+    }
+    async pullChanges(since) {
+        if (!this.client) {
+            throw new Error('Notion client not initialized');
+        }
+        const notes = [];
+        let hasMore = true;
+        let startCursor = this.syncCursor;
+        while (hasMore) {
+            const response = await this.rateLimiter(() => this.client.search({
+                filter: { property: 'object', value: 'page' },
+                sort: { direction: 'descending', timestamp: 'last_edited_time' },
+                start_cursor: startCursor,
+                page_size: 100,
+            }));
+            for (const page of response.results) {
+                if (page.object === 'page') {
+                    const note = await this.convertPageToNote(page);
+                    if (note && (!since || note.updated_at >= since.getTime())) {
+                        notes.push(note);
+                    }
+                }
+            }
+            hasMore = response.has_more;
+            startCursor = response.next_cursor || undefined;
+            // Update sync cursor for delta sync
+            if (!hasMore && startCursor) {
+                this.syncCursor = startCursor;
+            }
+        }
+        return notes;
+    }
+    async pushChanges(notes) {
+        for (const note of notes) {
+            await this.updateOrCreatePage(note);
+        }
+    }
+    async getNote(id) {
+        if (!this.client) {
+            throw new Error('Notion client not initialized');
+        }
+        try {
+            const page = await this.rateLimiter(() => this.client.pages.retrieve({ page_id: id }));
+            return this.convertPageToNote(page);
+        }
+        catch (error) {
+            if (error.code === 'object_not_found') {
+                return null;
+            }
+            throw error;
+        }
+    }
+    async createNote(note) {
+        if (!this.client) {
+            throw new Error('Notion client not initialized');
+        }
+        const blocks = this.markdownToNotionBlocks(note.body);
+        const page = await this.rateLimiter(() => this.client.pages.create({
+            parent: { type: 'page_id', page_id: process.env.NOTION_PARENT_PAGE_ID || '' },
+            properties: {
+                title: {
+                    title: [{ text: { content: note.title } }],
+                },
+            },
+            children: blocks,
+        }));
+        const createdNote = {
+            id: page.id,
+            title: note.title,
+            body: note.body,
+            created_at: Date.now(),
+            updated_at: Date.now(),
+            source_connector: this.name,
+            source_id: page.id,
+            checksum: generateChecksum(note.body),
+            tags: note.tags,
+        };
+        return createdNote;
+    }
+    async updateNote(id, updates) {
+        if (!this.client) {
+            throw new Error('Notion client not initialized');
+        }
+        const existing = await this.getNote(id);
+        if (!existing) {
+            throw new Error(`Note not found: ${id}`);
+        }
+        // Update page properties
+        if (updates.title) {
+            await this.rateLimiter(() => this.client.pages.update({
+                page_id: id,
+                properties: {
+                    title: {
+                        title: [{ text: { content: updates.title } }],
+                    },
+                },
+            }));
+        }
+        // Update page content if body changed
+        if (updates.body) {
+            // Delete existing blocks
+            const blocks = await this.rateLimiter(() => this.client.blocks.children.list({ block_id: id }));
+            for (const block of blocks.results) {
+                await this.rateLimiter(() => this.client.blocks.delete({ block_id: block.id }));
+            }
+            // Add new blocks
+            const newBlocks = this.markdownToNotionBlocks(updates.body);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            await this.rateLimiter(() => this.client.blocks.children.append({
+                block_id: id,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                children: newBlocks,
+            }));
+        }
+        const updated = {
+            ...existing,
+            ...updates,
+            updated_at: Date.now(),
+            checksum: generateChecksum(updates.body || existing.body),
+        };
+        return updated;
+    }
+    async deleteNote(id) {
+        if (!this.client) {
+            throw new Error('Notion client not initialized');
+        }
+        await this.rateLimiter(() => this.client.pages.update({
+            page_id: id,
+            archived: true,
+        }));
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async convertPageToNote(page) {
+        if (!this.client)
+            return null;
+        try {
+            const title = this.extractTitle(page);
+            const blocks = await this.rateLimiter(() => this.client.blocks.children.list({ block_id: page.id }));
+            const body = this.notionBlocksToMarkdown(blocks.results);
+            const createdTime = new Date(page.created_time).getTime();
+            const updatedTime = new Date(page.last_edited_time).getTime();
+            return {
+                id: page.id,
+                title,
+                body,
+                created_at: createdTime,
+                updated_at: updatedTime,
+                source_connector: this.name,
+                source_id: page.id,
+                checksum: generateChecksum(body),
+                tags: [],
+            };
+        }
+        catch (error) {
+            console.error(`Failed to convert page ${page.id}:`, error);
+            return null;
+        }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    extractTitle(page) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (page.properties?.title?.title?.[0]?.text?.content) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+            return page.properties.title.title[0].text.content;
+        }
+        if (page.properties?.Name?.title?.[0]?.text?.content) {
+            return page.properties.Name.title[0].text.content;
+        }
+        return 'Untitled';
+    }
+    notionBlocksToMarkdown(blocks) {
+        const lines = [];
+        for (const block of blocks) {
+            switch (block.type) {
+                case 'paragraph':
+                    lines.push(this.richTextToMarkdown(block.paragraph?.rich_text || []));
+                    lines.push('');
+                    break;
+                case 'heading_1':
+                    lines.push(`# ${this.richTextToMarkdown(block.heading_1?.rich_text || [])}`);
+                    lines.push('');
+                    break;
+                case 'heading_2':
+                    lines.push(`## ${this.richTextToMarkdown(block.heading_2?.rich_text || [])}`);
+                    lines.push('');
+                    break;
+                case 'heading_3':
+                    lines.push(`### ${this.richTextToMarkdown(block.heading_3?.rich_text || [])}`);
+                    lines.push('');
+                    break;
+                case 'bulleted_list_item':
+                    lines.push(`- ${this.richTextToMarkdown(block.bulleted_list_item?.rich_text || [])}`);
+                    break;
+                case 'numbered_list_item':
+                    lines.push(`1. ${this.richTextToMarkdown(block.numbered_list_item?.rich_text || [])}`);
+                    break;
+                case 'code': {
+                    const language = block.code?.language || '';
+                    const code = this.richTextToMarkdown(block.code?.rich_text || []);
+                    lines.push(`\`\`\`${language}`);
+                    lines.push(code);
+                    lines.push('```');
+                    lines.push('');
+                    break;
+                }
+                case 'quote':
+                    lines.push(`> ${this.richTextToMarkdown(block.quote?.rich_text || [])}`);
+                    lines.push('');
+                    break;
+            }
+        }
+        return lines.join('\n').trim();
+    }
+    richTextToMarkdown(richText) {
+        return richText
+            .map(text => {
+            let content = text.plain_text || '';
+            if (text.annotations?.bold)
+                content = `**${content}**`;
+            if (text.annotations?.italic)
+                content = `*${content}*`;
+            if (text.annotations?.code)
+                content = `\`${content}\``;
+            if (text.annotations?.strikethrough)
+                content = `~~${content}~~`;
+            if (text.href)
+                content = `[${content}](${text.href})`;
+            return content;
+        })
+            .join('');
+    }
+    markdownToNotionBlocks(markdown) {
+        const blocks = [];
+        const lines = markdown.split('\n');
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) {
+                continue;
+            }
+            // Headings
+            if (trimmed.startsWith('### ')) {
+                blocks.push({
+                    type: 'heading_3',
+                    heading_3: {
+                        rich_text: [{ text: { content: trimmed.slice(4) } }],
+                    },
+                });
+            }
+            else if (trimmed.startsWith('## ')) {
+                blocks.push({
+                    type: 'heading_2',
+                    heading_2: {
+                        rich_text: [{ text: { content: trimmed.slice(3) } }],
+                    },
+                });
+            }
+            else if (trimmed.startsWith('# ')) {
+                blocks.push({
+                    type: 'heading_1',
+                    heading_1: {
+                        rich_text: [{ text: { content: trimmed.slice(2) } }],
+                    },
+                });
+            }
+            // Lists
+            else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                blocks.push({
+                    type: 'bulleted_list_item',
+                    bulleted_list_item: {
+                        rich_text: [{ text: { content: trimmed.slice(2) } }],
+                    },
+                });
+            }
+            else if (/^\d+\.\s/.test(trimmed)) {
+                blocks.push({
+                    type: 'numbered_list_item',
+                    numbered_list_item: {
+                        rich_text: [{ text: { content: trimmed.replace(/^\d+\.\s/, '') } }],
+                    },
+                });
+            }
+            // Code blocks
+            else if (trimmed.startsWith('```')) {
+                const language = trimmed.slice(3).trim();
+                const codeLines = [];
+                let i = lines.indexOf(line) + 1;
+                while (i < lines.length && !lines[i].trim().startsWith('```')) {
+                    codeLines.push(lines[i]);
+                    i++;
+                }
+                blocks.push({
+                    type: 'code',
+                    code: {
+                        rich_text: [{ text: { content: codeLines.join('\n') } }],
+                        language: language || 'plain text',
+                    },
+                });
+            }
+            // Quote
+            else if (trimmed.startsWith('> ')) {
+                blocks.push({
+                    type: 'quote',
+                    quote: {
+                        rich_text: [{ text: { content: trimmed.slice(2) } }],
+                    },
+                });
+            }
+            // Regular paragraph
+            else {
+                blocks.push({
+                    type: 'paragraph',
+                    paragraph: {
+                        rich_text: [{ text: { content: trimmed } }],
+                    },
+                });
+            }
+        }
+        return blocks;
+    }
+    async updateOrCreatePage(note) {
+        const existing = await this.getNote(note.id);
+        if (existing) {
+            await this.updateNote(note.id, note);
+        }
+        else {
+            await this.createNote(note);
+        }
+    }
+    async close() {
+        // Notion client doesn't require explicit cleanup
+    }
+}

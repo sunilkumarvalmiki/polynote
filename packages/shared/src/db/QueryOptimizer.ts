@@ -369,7 +369,6 @@ export class QueryOptimizer {
    * Get cached query result if available and not expired
    * Currently unused but reserved for future query caching feature
    */
-  // @ts-expect-error - Reserved for future use
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private getCached(key: string): unknown | null {
     const cached = this.queryCache.get(key);
@@ -388,7 +387,6 @@ export class QueryOptimizer {
    * Cache a query result
    * Currently unused but reserved for future query caching feature
    */
-  // @ts-expect-error - Reserved for future use
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private setCache(key: string, result: unknown): void {
     this.queryCache.set(key, {

@@ -1,0 +1,311 @@
+/**
+ * Key Management Service (KMS)
+ * Handles master key derivation, storage, and rotation using libsodium
+ */
+import { SodiumPlus, CryptographyKey } from 'sodium-plus';
+import { SecurityError, SecurityErrorCode, } from '../types/index.js';
+import { ensureBuffer } from '../utils/buffer.js';
+/**
+ * BIP39 word list subset for recovery phrases (simplified for demo)
+ * In production, use a full BIP39 implementation
+ */
+const WORD_LIST = [
+    'abandon',
+    'ability',
+    'able',
+    'about',
+    'above',
+    'absent',
+    'absorb',
+    'abstract',
+    'absurd',
+    'abuse',
+    'access',
+    'accident',
+    'account',
+    'accuse',
+    'achieve',
+    'acid',
+    'acoustic',
+    'acquire',
+    'across',
+    'act',
+    'action',
+    'actor',
+    'actress',
+    'actual',
+    'adapt',
+    'add',
+    'addict',
+    'address',
+    'adjust',
+    'admit',
+    'adult',
+    'advance',
+    'advice',
+    'aerobic',
+    'affair',
+    'afford',
+    'afraid',
+    'again',
+    'age',
+    'agent',
+    'agree',
+    'ahead',
+    'aim',
+    'air',
+    'airport',
+    'aisle',
+    'alarm',
+    'album',
+    // ... (simplified list - use full BIP39 in production)
+];
+export class KeyManagementService {
+    sodium = null;
+    masterKey = null;
+    salt = null;
+    initialized = false;
+    // Key derivation parameters
+    SALT_LENGTH = 32;
+    DERIVATION_SALT_LENGTH = 16; // Argon2 requires 16 bytes
+    KEY_LENGTH = 32;
+    DEFAULT_ITERATIONS = 2; // Argon2id ops limit (minimum for testing)
+    /**
+     * Initialize the KMS with a master passphrase
+     */
+    async initialize(config) {
+        try {
+            // Initialize sodium-plus
+            this.sodium = await SodiumPlus.auto();
+            // Use provided salt or generate new one
+            this.salt = await this.resolveSalt(config.salt);
+            // Derive master key using Argon2id
+            const masterKeyBuffer = await this.deriveMasterKey(config.passphrase, this.getDerivationSalt(this.salt), config.iterations || this.DEFAULT_ITERATIONS);
+            const keyBuf = ensureBuffer(masterKeyBuffer);
+            this.masterKey = new CryptographyKey(keyBuf);
+            this.initialized = true;
+        }
+        catch (error) {
+            throw new SecurityError('Failed to initialize key management service', SecurityErrorCode.NOT_INITIALIZED, error);
+        }
+    }
+    /**
+     * Check if KMS is initialized
+     */
+    isInitialized() {
+        return this.initialized;
+    }
+    /**
+     * Derive a specific encryption key for a purpose
+     * Uses HKDF (HMAC-based Key Derivation Function) for domain separation
+     */
+    async deriveKey(purpose, context) {
+        if (!this.initialized || !this.masterKey || !this.sodium) {
+            throw new SecurityError('KMS not initialized. Call initialize() first.', SecurityErrorCode.NOT_INITIALIZED);
+        }
+        try {
+            // Create info string for HKDF: purpose + optional context
+            const info = context ? `${purpose}:${context}` : purpose;
+            const infoBuffer = Buffer.from(info, 'utf-8');
+            // Derive subkey using crypto_kdf (Libsodium's KDF)
+            // We use a simple approach: BLAKE2b with master key as key and info as message
+            const subkey = await this.sodium.crypto_generichash(Buffer.concat([await this.masterKey.getBuffer(), infoBuffer]), this.masterKey, this.KEY_LENGTH);
+            return subkey;
+        }
+        catch (error) {
+            throw new SecurityError(`Failed to derive key for purpose: ${purpose}`, SecurityErrorCode.KEY_DERIVATION_FAILED, error);
+        }
+    }
+    /**
+     * Generate a BIP39-like recovery phrase (12 words)
+     */
+    async generateRecoveryPhrase() {
+        if (!this.initialized || !this.masterKey || !this.sodium) {
+            throw new SecurityError('KMS not initialized', SecurityErrorCode.NOT_INITIALIZED);
+        }
+        try {
+            // Generate 16 bytes of entropy (128 bits = 12 words)
+            const entropy = ensureBuffer(await this.sodium.randombytes_buf(16));
+            // Convert entropy to word indices
+            const words = [];
+            for (let i = 0; i < 12; i++) {
+                // Use 11 bits per word (2048 word list)
+                const wordIndex = entropy.readUInt8(i) % WORD_LIST.length;
+                words.push(WORD_LIST[wordIndex]);
+            }
+            return words.join(' ');
+        }
+        catch (error) {
+            throw new SecurityError('Failed to generate recovery phrase', SecurityErrorCode.KEY_DERIVATION_FAILED, error);
+        }
+    }
+    /**
+     * Recover master key from recovery phrase
+     */
+    async recoverFromPhrase(phrase) {
+        try {
+            this.sodium = await SodiumPlus.auto();
+            // Convert phrase back to entropy
+            const words = phrase.trim().toLowerCase().split(/\s+/);
+            if (words.length !== 12) {
+                throw new Error('Recovery phrase must be 12 words');
+            }
+            // Validate words
+            const indices = words.map(word => {
+                const index = WORD_LIST.indexOf(word);
+                if (index === -1) {
+                    throw new Error(`Invalid word in recovery phrase: ${word}`);
+                }
+                return index;
+            });
+            // Convert indices back to entropy
+            const entropy = Buffer.alloc(16);
+            indices.forEach((index, i) => {
+                entropy.writeUInt8(index, i);
+            });
+            // Derive master key from entropy
+            // In production, use proper BIP39 derivation
+            this.salt = await this.resolveSalt();
+            const masterKeyBuffer = await this.sodium.crypto_generichash(entropy, undefined, this.KEY_LENGTH);
+            this.masterKey = new CryptographyKey(ensureBuffer(masterKeyBuffer));
+            this.initialized = true;
+        }
+        catch (error) {
+            const cause = error;
+            throw new SecurityError(`Failed to recover from recovery phrase: ${cause.message}`, SecurityErrorCode.INVALID_RECOVERY_PHRASE, cause);
+        }
+    }
+    /**
+     * Export master key encrypted with a password
+     */
+    async exportMasterKey(password) {
+        if (!this.initialized || !this.masterKey || !this.sodium || !this.salt) {
+            throw new SecurityError('KMS not initialized', SecurityErrorCode.NOT_INITIALIZED);
+        }
+        try {
+            // Derive encryption key from password
+            const passwordKey = await this.deriveMasterKey(password, this.getDerivationSalt(this.salt), this.DEFAULT_ITERATIONS);
+            // Generate nonce
+            const nonce = ensureBuffer(await this.sodium.randombytes_buf(24));
+            // Encrypt master key
+            const masterKeyBuffer = await this.masterKey.getBuffer();
+            const encrypted = await this.sodium.crypto_secretbox(masterKeyBuffer, nonce, new CryptographyKey(ensureBuffer(passwordKey)));
+            // Return: salt + nonce + encrypted key
+            return Buffer.concat([this.salt, nonce, encrypted]);
+        }
+        catch (error) {
+            throw new SecurityError('Failed to export master key', SecurityErrorCode.ENCRYPTION_FAILED, error);
+        }
+    }
+    /**
+     * Import master key from encrypted export
+     */
+    async importMasterKey(encryptedKey, password) {
+        try {
+            this.sodium = await SodiumPlus.auto();
+            // Extract salt, nonce, and ciphertext
+            const salt = encryptedKey.subarray(0, this.SALT_LENGTH);
+            const nonce = encryptedKey.subarray(this.SALT_LENGTH, this.SALT_LENGTH + 24);
+            const ciphertext = encryptedKey.subarray(this.SALT_LENGTH + 24);
+            // Derive decryption key from password
+            const passwordKey = await this.deriveMasterKey(password, this.getDerivationSalt(salt), this.DEFAULT_ITERATIONS);
+            // Decrypt master key
+            const decrypted = await this.sodium.crypto_secretbox_open(ciphertext, nonce, new CryptographyKey(ensureBuffer(passwordKey)));
+            this.masterKey = new CryptographyKey(ensureBuffer(decrypted));
+            this.salt = ensureBuffer(salt);
+            this.initialized = true;
+        }
+        catch (error) {
+            throw new SecurityError('Failed to import master key - invalid password or corrupted data', SecurityErrorCode.DECRYPTION_FAILED, error);
+        }
+    }
+    /**
+     * Rotate master key to a new passphrase
+     */
+    async rotateMasterKey(newConfig) {
+        if (!this.initialized || !this.masterKey || !this.sodium) {
+            throw new SecurityError('KMS not initialized', SecurityErrorCode.NOT_INITIALIZED);
+        }
+        try {
+            // Store old key temporarily
+            const oldKey = this.masterKey;
+            // Generate new master key
+            const newSalt = await this.resolveSalt(newConfig.salt);
+            const newMasterKeyBuffer = await this.deriveMasterKey(newConfig.passphrase, this.getDerivationSalt(newSalt), newConfig.iterations || this.DEFAULT_ITERATIONS);
+            // Update to new key
+            this.masterKey = new CryptographyKey(ensureBuffer(newMasterKeyBuffer));
+            this.salt = newSalt;
+            // Securely wipe old key from memory
+            await this.zeroizeBuffer(await oldKey.getBuffer());
+        }
+        catch (error) {
+            throw new SecurityError('Failed to rotate master key', SecurityErrorCode.KEY_DERIVATION_FAILED, error);
+        }
+    }
+    /**
+     * Clear keys from memory (zeroize)
+     */
+    clear() {
+        if (this.masterKey) {
+            // Sodium-plus handles secure memory clearing
+            this.masterKey = null;
+        }
+        if (this.salt) {
+            this.zeroizeBuffer(this.salt);
+            this.salt = null;
+        }
+        this.initialized = false;
+    }
+    async resolveSalt(source) {
+        if (!this.sodium) {
+            throw new Error('Sodium not initialized');
+        }
+        if (!source) {
+            return ensureBuffer(await this.sodium.randombytes_buf(this.SALT_LENGTH));
+        }
+        const normalized = ensureBuffer(source);
+        if (normalized.length === this.SALT_LENGTH) {
+            return Buffer.from(normalized);
+        }
+        if (normalized.length === this.DERIVATION_SALT_LENGTH) {
+            const expanded = await this.sodium.crypto_generichash(normalized, undefined, this.SALT_LENGTH);
+            return ensureBuffer(expanded);
+        }
+        throw new Error(`Salt must be ${this.DERIVATION_SALT_LENGTH} or ${this.SALT_LENGTH} bytes long`);
+    }
+    getDerivationSalt(salt) {
+        return salt.subarray(0, this.DERIVATION_SALT_LENGTH);
+    }
+    /**
+     * Derive master key using Argon2id
+     */
+    async deriveMasterKey(passphrase, salt, iterations) {
+        if (!this.sodium) {
+            throw new Error('Sodium not initialized');
+        }
+        // Use Argon2id for key derivation
+        // Parameters: opsLimit (iterations), memLimit (memory in bytes)
+        const opsLimit = Math.max(iterations, 2); // Minimum 2 for Argon2
+        const memLimit = 64 * 1024 * 1024; // 64 MB
+        const key = await this.sodium.crypto_pwhash(this.KEY_LENGTH, passphrase, salt, opsLimit, memLimit, this.sodium.CRYPTO_PWHASH_ALG_ARGON2ID13);
+        return ensureBuffer(key);
+    }
+    /**
+     * Securely wipe buffer from memory
+     */
+    async zeroizeBuffer(buffer) {
+        if (this.sodium) {
+            await this.sodium.sodium_memzero(buffer);
+        }
+        else {
+            // Fallback: overwrite with zeros
+            buffer.fill(0);
+        }
+    }
+    /**
+     * Get salt for export/backup
+     */
+    getSalt() {
+        return this.salt;
+    }
+}

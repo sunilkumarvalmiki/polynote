@@ -2,7 +2,7 @@
   "name": "@polynote/desktop",
   "version": "1.0.0",
   "description": "PolyNote Desktop Application - Electron + React",
-  "main": "electron/main.ts",
+  "main": "dist/electron/main.js",
   "author": "PolyNote Team",
   "license": "MIT",
   "private": true,
@@ -66,9 +66,10 @@
       "buildResources": "assets"
     },
     "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "!dist/*.map"
+      "dist/renderer/**/*",
+      "dist/electron/*.js",
+      "!dist/*.map",
+      "package.json"
     ],
     "extraResources": [
       {

@@ -920,7 +920,7 @@ export function registerIpcHandlers(): void {
 
     try {
       // Store configuration in settings
-      const connectorSettings = mockSettings[`connector_${name}`] || {};
+      const connectorSettings = (mockSettings[`connector_${name}`] as Record<string, unknown>) || {};
       mockSettings[`connector_${name}`] = { ...connectorSettings, ...config };
 
       // Update connector if it exists in registry

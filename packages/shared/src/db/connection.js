@@ -107,4 +107,3 @@ export function searchNotes(searchTerm, limit = 50) {
     `, [quotedTerm, limit]);
 }
 export { Database };
-//# sourceMappingURL=connection.js.map

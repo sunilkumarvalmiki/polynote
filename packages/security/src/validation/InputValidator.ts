@@ -31,7 +31,7 @@ export class InputValidator {
    * Sanitize HTML content to prevent XSS
    */
   sanitizeHtml(html: string, allowedTags?: string[]): string {
-    const config: DOMPurify.Config = {
+    const config: any = {
       ALLOWED_TAGS: allowedTags || [
         'p', 'br', 'strong', 'em', 'u', 's', 'ul', 'ol', 'li',
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote',
@@ -42,7 +42,7 @@ export class InputValidator {
       ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
     };
 
-    return DOMPurify.sanitize(html, config);
+    return DOMPurify.sanitize(html, config) as unknown as string;
   }
 
   /**

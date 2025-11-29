@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
+    "outDir": "./dist/electron",
     "module": "esnext",
     "target": "ES2022",
     "lib": ["ES2022"],
